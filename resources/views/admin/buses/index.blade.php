@@ -149,7 +149,7 @@
                                     'maintenance' => 'bg-yellow-100 text-yellow-800',
                                 ];
 
-                                $busType = $bus->type ?? 'reguler';
+                                $busType = $bus->bus_type ?? 'reguler';
                                 $busStatus = $bus->status ?? 'inactive';
                             @endphp
                             <tr>
@@ -162,11 +162,11 @@
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $bus->name ?? 'Nama Bus' }}
+                                                {{ $bus->bus_name }}
                                             </div>
                                             <div class="text-sm text-gray-500">
                                                 <i class="fas fa-car-alt mr-1"></i>
-                                                {{ $bus->license_plate ?? 'Plat Nomor' }}
+                                                {{ $bus->plate_number }}
                                             </div>
                                             @if ($bus->facilities)
                                                 <div class="mt-1">
@@ -193,7 +193,7 @@
                                     <div class="space-y-1">
                                         <div class="flex items-center text-sm text-gray-900">
                                             <i class="fas fa-users mr-2 text-gray-400"></i>
-                                            <span class="font-medium">{{ $bus->capacity ?? 0 }}</span>
+                                            <span class="font-medium">{{ $bus->total_seats }}</span>
                                             <span class="ml-1 text-gray-500">kursi</span>
                                         </div>
                                         <div class="flex items-center text-sm text-gray-900">
@@ -230,10 +230,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-3">
                                         <!-- Detail Button -->
-                                        <button type="button" onclick="showBusDetail({{ $bus->id }})"
+                                        <a href="{{ route('admin.buses.show', $bus->id) }}"
                                             class="text-blue-600 hover:text-blue-900" title="Detail">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </a>
 
                                         <!-- Edit Button -->
                                         <a href="{{ route('admin.buses.edit', $bus->id) }}"
@@ -246,10 +246,8 @@
                                             class="inline"
                                             onsubmit="return confirm('Apakah Anda yakin ingin {{ $busStatus == 'active' ? 'menonaktifkan' : 'mengaktifkan' }} bus ini?')">
                                             @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="text-{{ $busStatus == 'active' ? 'yellow' : 'green' }}-600 hover:text-{{ $busStatus == 'active' ? 'yellow' : 'green' }}-900"
-                                                title="{{ $busStatus == 'active' ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                            <!-- HAPUS baris @method('PATCH') -->
+                                            <button type="submit" ...>
                                                 <i
                                                     class="fas fa-{{ $busStatus == 'active' ? 'ban' : 'check-circle' }}"></i>
                                             </button>

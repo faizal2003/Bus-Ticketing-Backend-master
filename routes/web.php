@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
+use App\Http\Controllers\SuperAdmin\ReportController as SuperAdminReportController;
 
 // Conductor
 use App\Http\Controllers\Conductor\DashboardController as ConductorDashboardController;
@@ -78,6 +79,7 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
 
         // Bus Management
         Route::resource('buses', AdminBusController::class)->except(['show']);
+        Route::get('buses/{bus}', [AdminBusController::class, 'show'])->name('buses.show');
         Route::post('buses/{bus}/toggle-status', [AdminBusController::class, 'toggleStatus'])->name('buses.toggle-status');
 
         // Schedule Management
@@ -127,6 +129,17 @@ Route::middleware(['auth', 'check.role:super_admin'])
             Route::post('/', [SuperAdminSettingController::class, 'update'])->name('update');
             Route::post('/cache-clear', [SuperAdminSettingController::class, 'clearCache'])->name('cache.clear');
             Route::post('/maintenance/run', [SuperAdminSettingController::class, 'runMaintenance'])->name('maintenance.run');
+        });
+
+        // Reports
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [SuperAdminReportController::class, 'index'])->name('index');
+            Route::get('export/bookings/pdf', [SuperAdminReportController::class, 'exportBookingsPDF'])->name('export.bookings.pdf');
+            Route::get('export/bookings/excel', [SuperAdminReportController::class, 'exportBookingsExcel'])->name('export.bookings.excel');
+            Route::get('export/revenue/pdf', [SuperAdminReportController::class, 'exportRevenuePDF'])->name('export.revenue.pdf');
+            Route::get('export/revenue/excel', [SuperAdminReportController::class, 'exportRevenueExcel'])->name('export.revenue.excel');
+            Route::get('export/buses/pdf', [SuperAdminReportController::class, 'exportBusesPDF'])->name('export.buses.pdf');
+            Route::get('export/buses/excel', [SuperAdminReportController::class, 'exportBusesExcel'])->name('export.buses.excel');
         });
     });
 

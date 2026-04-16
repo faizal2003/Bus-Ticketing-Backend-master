@@ -20,7 +20,7 @@
         <div class="bg-white rounded-lg shadow">
             <form method="POST" action="{{ route('admin.profile.update') }}">
                 @csrf
-
+                @method('PATCH')
                 <div class="p-6 space-y-6">
                     <!-- Profile Picture -->
                     <div class="flex items-center space-x-6">
@@ -101,7 +101,7 @@
 
                 <form method="POST" action="{{ route('admin.profile.password.update') }}">
                     @csrf
-
+                    @method('PUT')
                     <div class="space-y-4">
                         <!-- Current Password -->
                         <div>

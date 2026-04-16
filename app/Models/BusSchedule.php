@@ -42,7 +42,7 @@ class BusSchedule extends Model
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(Booking::class, 'schedule_id');
     }
 
     public function confirmedBookings()

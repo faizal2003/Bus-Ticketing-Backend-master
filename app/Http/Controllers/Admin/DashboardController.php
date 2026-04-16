@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Bus;
 use App\Models\Booking;
 use App\Models\BusSchedule;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -33,8 +31,7 @@ class DashboardController extends Controller
                 ->where('booking_status', 'confirmed')
                 ->sum('total_passengers');
 
-            // PERBAIKAN: Ganti Schedule dengan BusSchedule di relation
-            $recentBookings = Booking::with(['user:id,name', 'busSchedule.bus']) // Ganti 'schedule' menjadi 'busSchedule'
+            $recentBookings = Booking::with(['user:id,name', 'busSchedule.bus'])
                 ->latest()
                 ->take(5)
                 ->get()
@@ -57,15 +54,19 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get()
                 ->map(function($schedule) {
+                    // PERBAIKAN: gunakan total_seats, bukan capacity
+                    $totalSeats = $schedule->bus->total_seats ?? 1; // default 1 agar tidak division by zero
+                    $availableSeats = $schedule->available_seats ?? 0;
+                    $seatPercentage = $totalSeats > 0 ? round(($availableSeats / $totalSeats) * 100) : 0;
+
                     return [
                         'id' => $schedule->id,
-                        'departure' => $schedule->departure_location,
-                        'arrival' => $schedule->arrival_location,
-                        'bus_name' => $schedule->bus->name ?? 'N/A',
+                        'departure' => $schedule->departure_city,
+                        'arrival' => $schedule->arrival_city,
+                        'bus_name' => $schedule->bus->bus_name ?? 'N/A',
                         'departure_time' => $schedule->departure_time->format('d/m/Y H:i'),
-                        'available_seats' => $schedule->available_seats,
-                        'seat_percentage' => $schedule->bus ?
-                            round(($schedule->available_seats / $schedule->bus->capacity) * 100) : 0,
+                        'available_seats' => $availableSeats,
+                        'seat_percentage' => $seatPercentage,
                     ];
                 });
 

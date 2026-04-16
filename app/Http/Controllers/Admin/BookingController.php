@@ -5,16 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
-use App\Models\BusSchedule;
-use App\Models\User;
-use App\Models\Ticket;
 use Carbon\Carbon;
 
 class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'schedule.bus']);
+        $query = Booking::with(['user', 'busSchedule.bus']);
 
         // Apply filters
         if ($request->filled('booking_code')) {
@@ -59,7 +56,7 @@ class BookingController extends Controller
     {
         $booking = Booking::with([
             'user',
-            'schedule.bus',
+            'busSchedule.bus',
             'passengers',
             'payment',
             'ticket'
@@ -72,12 +69,12 @@ class BookingController extends Controller
             'passenger_name' => $booking->user->name,
             'passenger_email' => $booking->user->email,
             'passenger_phone' => $booking->user->phone,
-            'departure_city' => $booking->schedule->departure_city,
-            'arrival_city' => $booking->schedule->arrival_city,
-            'departure_time' => Carbon::parse($booking->schedule->departure_time)->format('d M Y, H:i'),
-            'arrival_time' => Carbon::parse($booking->schedule->arrival_time)->format('d M Y, H:i'),
-            'bus_name' => $booking->schedule->bus->bus_name ?? 'Bus tidak ditemukan',
-            'bus_number' => $booking->schedule->bus->bus_number ?? '-',
+            'departure_city' => $booking->busSchedule->departure_city,
+            'arrival_city' => $booking->busSchedule->arrival_city,
+            'departure_time' => Carbon::parse($booking->busSchedule->departure_time)->format('d M Y, H:i'),
+            'arrival_time' => Carbon::parse($booking->busSchedule->arrival_time)->format('d M Y, H:i'),
+            'bus_name' => $booking->busSchedule->bus->bus_name ?? 'Bus tidak ditemukan',
+            'bus_number' => $booking->busSchedule->bus->bus_number ?? '-',
             'seat_count' => $booking->total_passengers,
             'seats' => $booking->passengers->pluck('seat_number')->toArray(),
             'total_price' => $booking->total_price,
@@ -132,7 +129,7 @@ class BookingController extends Controller
             ]);
 
             // Update available seats
-            $booking->schedule->updateAvailableSeats();
+            $booking->busSchedule->updateAvailableSeats();
 
             return redirect()->route('admin.bookings.show', $id)
                 ->with('success', 'Pemesanan berhasil dibatalkan');
@@ -151,7 +148,7 @@ class BookingController extends Controller
         $qrData = json_encode([
             'booking_code' => $booking->booking_code,
             'ticket_code' => $ticketCode,
-            'schedule_id' => $booking->schedule_id,
+            'schedule_id' => $booking->busSchedule_id,
             'timestamp' => now()->timestamp
         ]);
 

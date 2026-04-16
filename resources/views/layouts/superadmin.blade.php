@@ -50,7 +50,13 @@
                 <a href="{{ route('superadmin.settings.index') }}"
                     class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.settings.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-cogs w-6"></i>
-                    <span class="ml-3">System Settings</span>
+                    <span class="ml-3">Konfigurasi Sistem</span>
+                </a>
+
+                <a href="{{ route('superadmin.reports.index') }}"
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.reports.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
+                    <i class="fas fa-chart-bar w-6"></i>
+                    <span class="ml-3">Laporan & Statistik</span>
                 </a>
 
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center px-6 py-3 hover:bg-purple-700">

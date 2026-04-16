@@ -40,7 +40,7 @@ class Booking extends Model
 
     public function schedule()
     {
-        return $this->belongsTo(BusSchedule::class);
+        return $this->belongsTo(BusSchedule::class, 'schedule_id');
     }
 
     public function passengers()
@@ -252,5 +252,10 @@ class Booking extends Model
     public function getSeatNumbers()
     {
         return $this->passengers->pluck('seat_number')->toArray();
+    }
+
+    public function busSchedule()
+    {
+        return $this->belongsTo(BusSchedule::class, 'bus_schedule_id');
     }
 }

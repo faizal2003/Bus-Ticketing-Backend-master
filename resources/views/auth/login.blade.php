@@ -52,16 +52,16 @@
         </div>
 
         {{-- Google Login --}}
-        <div class="d-grid mb-3">
+        {{-- <div class="d-grid mb-3">
             <a href="{{ route('google.login') }}" class="btn btn-outline-danger btn-lg">
                 <i class="fab fa-google me-2"></i>Login dengan Google
             </a>
-        </div>
+        </div> --}}
 
         {{-- Divider --}}
-        <div class="text-center mb-3">
+        {{-- <div class="text-center mb-3">
             <span class="text-muted">atau</span>
-        </div>
+        </div> --}}
 
         {{-- Submit --}}
         <div class="d-grid">
@@ -72,12 +72,12 @@
     </form>
 
     {{-- Register Link --}}
-    <div class="text-center mt-4">
+    {{-- <div class="text-center mt-4">
         <p class="text-muted mb-0">
             Belum punya akun?
             <a href="{{ route('register') }}" class="text-decoration-none fw-semibold">Daftar sekarang</a>
         </p>
-    </div>
+    </div> --}}
 @endsection
 
 @section('auth-footer')

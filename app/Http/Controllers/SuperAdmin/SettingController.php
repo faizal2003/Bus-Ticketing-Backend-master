@@ -3,67 +3,75 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
 
 class SettingController extends Controller
 {
     /**
-     * Display system settings.
+     * Display system configuration page.
      */
     public function index()
     {
-        // Get current settings
-        $settings = [
-            'app_name' => config('app.name', 'Bus Ticketing System'),
-            'app_url' => config('app.url'),
-            'app_timezone' => config('app.timezone'),
-            'app_locale' => config('app.locale'),
-            'mail_from_address' => config('mail.from.address'),
-            'mail_from_name' => config('mail.from.name'),
-            'session_lifetime' => config('session.lifetime'),
-            'cache_driver' => config('cache.default'),
-            'queue_driver' => config('queue.default'),
-        ];
+        // Ambil semua data sekali saja
+        $allSettings = Setting::all();
 
-        // Get system info
-        $systemInfo = [
-            'laravel_version' => app()->version(),
-            'php_version' => PHP_VERSION,
-            'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'N/A',
-            'server_os' => php_uname('s') . ' ' . php_uname('r'),
-            'database_driver' => config('database.default'),
-        ];
+        // Group by group untuk keperluan lain (jika dibutuhkan di view)
+        $settings = $allSettings->groupBy('group');
 
-        // Get cache stats
-        $cacheInfo = [
-            'cache_size' => 'N/A',
-            'cache_items' => 'N/A',
-        ];
+        // Buat array key-value untuk akses mudah di view
+        $settingValues = [];
+        foreach ($allSettings as $setting) {
+            $settingValues[$setting->key] = $setting->value;
+        }
 
-        return view('superadmin.settings.index', compact('settings', 'systemInfo', 'cacheInfo'));
+        return view('superadmin.settings.index', compact('settings', 'settingValues'));
     }
 
     /**
-     * Update system settings.
+     * Update system configuration.
      */
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'app_name' => 'required|string|max:255',
-            'app_timezone' => 'required|timezone',
-            'app_locale' => 'required|in:id,en',
-            'mail_from_address' => 'required|email',
-            'mail_from_name' => 'required|string|max:255',
-            'session_lifetime' => 'required|integer|min:1|max:1440',
-        ]);
+        $rules = [
+            'company_name' => 'required|string|max:255',
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'midtrans_server_key' => 'nullable|string',
+            'midtrans_client_key' => 'nullable|string',
+            'midtrans_merchant_id' => 'nullable|string',
+            'midtrans_environment' => 'required|in:sandbox,production',
+            'payment_timeout' => 'required|integer|min:1|max:1440',
+            'qr_size' => 'required|integer|min:100|max:800',
+            'qr_margin' => 'required|integer|min:0|max:50',
+            'qr_error_correction' => 'required|in:L,M,Q,H',
+            'ticket_format' => 'required|string',
+        ];
 
-        // Update config values (in a real app, you'd save these to database)
-        // For now, we'll just show a success message
-        // In production, you should use a settings table or .env file
+        $validated = $request->validate($rules);
 
-        return back()->with('success', 'Pengaturan berhasil diperbarui.');
+        // Update atau create setiap setting
+        foreach ($validated as $key => $value) {
+            if ($key === 'company_logo') {
+                if ($request->hasFile('company_logo')) {
+                    // Hapus logo lama jika ada
+                    $oldLogo = Setting::get('company_logo');
+                    if ($oldLogo && Storage::disk('public')->exists($oldLogo)) {
+                        Storage::disk('public')->delete($oldLogo);
+                    }
+                    // Upload logo baru
+                    $path = $request->file('company_logo')->store('logos', 'public');
+                    $value = $path;
+                } else {
+                    continue; // tidak ada perubahan logo
+                }
+            }
+            Setting::set($key, $value);
+        }
+
+        return redirect()->route('superadmin.settings.index')
+            ->with('success', 'Konfigurasi sistem berhasil diperbarui.');
     }
 
     /**
@@ -76,9 +84,6 @@ class SettingController extends Controller
             Artisan::call('view:clear');
             Artisan::call('route:clear');
             Artisan::call('config:clear');
-
-            $type = $request->get('type', 'all');
-
             return back()->with('success', 'Cache berhasil dibersihkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
@@ -92,21 +97,11 @@ class SettingController extends Controller
     {
         try {
             $command = $request->get('command');
-
-            $allowedCommands = [
-                'optimize',
-                'migrate',
-                'db:seed',
-                'storage:link',
-            ];
-
+            $allowedCommands = ['optimize', 'migrate', 'db:seed', 'storage:link'];
             if (!in_array($command, $allowedCommands)) {
                 return back()->with('error', 'Perintah tidak diizinkan.');
             }
-
             Artisan::call($command);
-            $output = Artisan::output();
-
             return back()->with('success', "Perintah $command berhasil dijalankan.");
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menjalankan perintah: ' . $e->getMessage());

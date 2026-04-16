@@ -69,48 +69,69 @@ class BusController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'license_plate' => 'required|string|max:20|unique:buses,license_plate',
-            'capacity' => 'required|integer|min:1|max:100',
-            'type' => 'required|string|in:reguler,premium,vip,ekonomi,bisnis,executive',
-            'facilities' => 'nullable|string',
-            'status' => 'required|in:active,inactive,maintenance',
+            'bus_name'       => 'required|string|max:255',
+            'bus_number'     => 'required|string|max:255|unique:buses,bus_number',   // ← tambahkan
+            'plate_number'   => 'required|string|max:20|unique:buses,plate_number',
+            'total_seats'    => 'required|integer|min:1|max:100',
+            'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
+            'facilities'     => 'nullable|array',   // ← ubah jadi array
+            'status'         => 'required|in:active,inactive,maintenance',
         ], [
-            'name.required' => 'Nama bus wajib diisi',
-            'license_plate.required' => 'Plat nomor wajib diisi',
-            'license_plate.unique' => 'Plat nomor sudah terdaftar',
-            'capacity.required' => 'Kapasitas wajib diisi',
-            'capacity.min' => 'Kapasitas minimal 1 kursi',
-            'capacity.max' => 'Kapasitas maksimal 100 kursi',
-            'type.required' => 'Tipe bus wajib dipilih',
-            'type.in' => 'Tipe bus tidak valid',
-            'status.required' => 'Status wajib dipilih',
-            'status.in' => 'Status tidak valid',
+            'bus_name.required'    => 'Nama bus wajib diisi',
+            'bus_number.required'  => 'Nomor bus wajib diisi',
+            'bus_number.unique'    => 'Nomor bus sudah terdaftar',
+            'plate_number.required'=> 'Plat nomor wajib diisi',
+            'plate_number.unique'  => 'Plat nomor sudah terdaftar',
+            'total_seats.required' => 'Kapasitas wajib diisi',
+            'total_seats.min'      => 'Kapasitas minimal 1 kursi',
+            'bus_type.required'    => 'Tipe bus wajib dipilih',
+            'bus_type.in'          => 'Tipe bus tidak valid',
+            'status.required'      => 'Status wajib dipilih',
+            'facilities.array'     => 'Format fasilitas tidak valid',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         try {
+            // Normalisasi bus_type ke lowercase agar konsisten
+            $busType = strtolower($request->bus_type);
+
+            // Facilities sudah dalam bentuk array dari checkbox
+            $facilities = $request->facilities ?? [];
+            $facilities = array_filter($facilities); // hapus nilai kosong
+
             Bus::create([
-                'name' => $request->name,
-                'license_plate' => $request->license_plate,
-                'capacity' => $request->capacity,
-                'type' => $request->type,
-                'facilities' => $request->facilities,
-                'status' => $request->status,
+                'bus_name'     => $request->bus_name,
+                'bus_number'   => $request->bus_number,   // ← simpan bus_number
+                'plate_number' => $request->plate_number,
+                'total_seats'  => $request->total_seats,
+                'bus_type'     => $busType,
+                'facilities'   => $facilities,
+                'status'       => $request->status,
             ]);
 
             return redirect()->route('admin.buses.index')
                 ->with('success', 'Bus berhasil ditambahkan.');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal menambahkan bus: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        try {
+            $bus = Bus::with('schedules')->findOrFail($id);
+            return view('admin.buses.show', compact('bus'));
+        } catch (\Exception $e) {
+            return redirect()->route('admin.buses.index')
+                ->with('error', 'Bus tidak ditemukan.');
         }
     }
 
@@ -153,32 +174,35 @@ class BusController extends Controller
             $bus = Bus::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255',
-                'license_plate' => ['required', 'string', 'max:20', Rule::unique('buses')->ignore($bus->id)],
-                'capacity' => 'required|integer|min:1|max:100',
-                'type' => 'required|string|in:reguler,premium,vip,ekonomi,bisnis,executive',
-                'facilities' => 'nullable|string',
-                'status' => 'required|in:active,inactive,maintenance',
+                'bus_name'       => 'required|string|max:255',
+                'bus_number'     => ['required', 'string', 'max:255', Rule::unique('buses')->ignore($bus->id)],
+                'plate_number'   => ['required', 'string', 'max:20', Rule::unique('buses')->ignore($bus->id)],
+                'total_seats'    => 'required|integer|min:1|max:100',
+                'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
+                'facilities'     => 'nullable|array',
+                'status'         => 'required|in:active,inactive,maintenance',
             ]);
 
             if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
+                return redirect()->back()->withErrors($validator)->withInput();
             }
 
+            $busType = strtolower($request->bus_type);
+            $facilities = $request->facilities ?? [];
+            $facilities = array_filter($facilities);
+
             $bus->update([
-                'name' => $request->name,
-                'license_plate' => $request->license_plate,
-                'capacity' => $request->capacity,
-                'type' => $request->type,
-                'facilities' => $request->facilities,
-                'status' => $request->status,
+                'bus_name'     => $request->bus_name,
+                'bus_number'   => $request->bus_number,
+                'plate_number' => $request->plate_number,
+                'total_seats'  => $request->total_seats,
+                'bus_type'     => $busType,
+                'facilities'   => $facilities,
+                'status'       => $request->status,
             ]);
 
             return redirect()->route('admin.buses.index')
                 ->with('success', 'Bus berhasil diperbarui.');
-
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Gagal memperbarui bus: ' . $e->getMessage())
@@ -218,14 +242,11 @@ class BusController extends Controller
     {
         try {
             $bus = Bus::findOrFail($id);
-
             $newStatus = $bus->status == 'active' ? 'inactive' : 'active';
             $bus->update(['status' => $newStatus]);
-
             $statusText = $newStatus == 'active' ? 'diaktifkan' : 'dinonaktifkan';
             return redirect()->route('admin.buses.index')
                 ->with('success', "Bus berhasil $statusText.");
-
         } catch (\Exception $e) {
             return redirect()->route('admin.buses.index')
                 ->with('error', 'Gagal mengubah status bus: ' . $e->getMessage());

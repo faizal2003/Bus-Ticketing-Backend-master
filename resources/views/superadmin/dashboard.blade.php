@@ -1,12 +1,12 @@
 @extends('layouts.superadmin')
 
-@section('title', 'Super Admin Dashboard')
+@section('title', 'Dashboard Super Admin')
 
 @section('content')
     <div class="space-y-6">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Total Users -->
+        <!-- 5 Statistik Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <!-- Total Penumpang -->
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -16,60 +16,29 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Total Users</h3>
-                        <p class="text-3xl font-bold text-gray-900">{{ $totalUsers ?? 0 }}</p>
+                        <h3 class="text-gray-500 text-sm font-medium">Total Penumpang</h3>
+                        <p class="text-3xl font-bold text-gray-900">{{ number_format($totalPassengers) }}</p>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <span class="text-sm text-blue-600">
-                        <i class="fas fa-user-shield mr-1"></i>{{ $totalAdmins ?? 0 }} admins
-                    </span>
                 </div>
             </div>
 
-            <!-- Today's Bookings -->
+            <!-- Total Transaksi -->
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <div
                             class="h-12 w-12 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
-                            <i class="fas fa-ticket-alt text-white text-xl"></i>
+                            <i class="fas fa-receipt text-white text-xl"></i>
                         </div>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Today's Bookings</h3>
-                        <p class="text-3xl font-bold text-gray-900">{{ $todayBookings ?? 0 }}</p>
+                        <h3 class="text-gray-500 text-sm font-medium">Total Transaksi</h3>
+                        <p class="text-3xl font-bold text-gray-900">{{ number_format($totalTransactions) }}</p>
                     </div>
-                </div>
-                <div class="mt-4">
-                    <span class="text-sm text-green-600">
-                        Rp {{ number_format($todayRevenue ?? 0, 0, ',', '.') }}
-                    </span>
                 </div>
             </div>
 
-            <!-- System Health -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div
-                            class="h-12 w-12 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
-                            <i class="fas fa-heartbeat text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-gray-500 text-sm font-medium">System Health</h3>
-                        <p class="text-3xl font-bold text-gray-900">98%</p>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <span class="text-sm text-green-600">
-                        <i class="fas fa-check-circle mr-1"></i>All systems operational
-                    </span>
-                </div>
-            </div>
-
-            <!-- Revenue -->
+            <!-- Pendapatan -->
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -79,254 +48,193 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <h3 class="text-gray-500 text-sm font-medium">Total Revenue</h3>
-                        <p class="text-3xl font-bold text-gray-900">Rp
-                            {{ number_format($systemHealth['month_revenue'] ?? 0, 0, ',', '.') }}</p>
+                        <h3 class="text-gray-500 text-sm font-medium">Pendapatan</h3>
+                        <p class="text-3xl font-bold text-gray-900">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</p>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <span class="text-sm text-green-600">
-                        <i class="fas fa-chart-line mr-1"></i>This month
-                    </span>
+            </div>
+
+            <!-- Jadwal Aktif -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="h-12 w-12 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm font-medium">Jadwal Aktif</h3>
+                        <p class="text-3xl font-bold text-gray-900">{{ number_format($activeSchedules) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kursi Terisi -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="h-12 w-12 rounded-lg bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center">
+                            <i class="fas fa-chair text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-gray-500 text-sm font-medium">Kursi Terisi</h3>
+                        <p class="text-3xl font-bold text-gray-900">{{ number_format($occupiedSeats) }}</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Users & Bookings -->
+        <!-- Dua Grafik -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Recent Users -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Users</h3>
-                    <a href="{{ route('superadmin.users.index') }}" class="text-sm text-purple-600 hover:text-purple-800">
-                        View all <i class="fas fa-arrow-right ml-1"></i>
-                    </a>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    User
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Joined
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($recentUsers as $user)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div
-                                                class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                                                {{ strtoupper(substr($user['name'], 0, 1)) }}
-                                            </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user['name'] }}</div>
-                                                <div class="text-sm text-gray-500">{{ $user['email'] }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span
-                                            class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $user['role'] == 'super_admin'
-                                                ? 'bg-purple-100 text-purple-800'
-                                                : ($user['role'] == 'admin'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : ($user['role'] == 'kondektur'
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : 'bg-green-100 text-green-800')) }}">
-                                            {{ $user['role_name'] ?? $user['role'] }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user['created_at'] }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="px-6 py-4 text-center text-gray-500">
-                                        No users found
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <!-- Grafik Penjualan -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Grafik Penjualan (7 Hari Terakhir)</h3>
+                <canvas id="salesChart" height="200"></canvas>
+            </div>
+
+            <!-- Grafik Rute Terlaris -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Rute Terlaris</h3>
+                <canvas id="routesChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Ringkasan Sistem & Pemesanan Terbaru -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Ringkasan Sistem -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Ringkasan Sistem</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Bus</p>
+                        <p class="text-2xl font-bold">{{ number_format($totalBuses) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Total User</p>
+                        <p class="text-2xl font-bold">{{ number_format($totalUsers) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Booking Hari Ini</p>
+                        <p class="text-2xl font-bold">{{ number_format($todayBookings) }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Pendapatan Hari Ini</p>
+                        <p class="text-2xl font-bold">Rp {{ number_format($todayRevenue, 0, ',', '.') }}</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Recent Bookings -->
-            <div class="bg-white shadow rounded-lg">
+            <!-- Pemesanan Terbaru -->
+            <div class="bg-white shadow rounded-lg overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Bookings</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">Pemesanan Terbaru</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Booking Code
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    User
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penumpang</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="divide-y divide-gray-200">
                             @forelse($recentBookings as $booking)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $booking['booking_code'] }}</div>
-                                        <div class="text-sm text-gray-500">{{ $booking['created_at'] }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $booking['user_name'] }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-green-600">
-                                            Rp {{ number_format($booking['total_price'], 0, ',', '.') }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="space-y-1">
-                                            <span
-                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                {{ $booking['status'] == 'confirmed'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : ($booking['status'] == 'pending'
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : 'bg-red-100 text-red-800') }}">
-                                                {{ ucfirst($booking['status']) }}
-                                            </span>
-                                            <div>
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                    {{ $booking['payment_status'] == 'paid' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                    {{ ucfirst($booking['payment_status']) }}
-                                                </span>
-                                            </div>
-                                        </div>
+                                    <td class="px-6 py-4 text-sm">{{ $booking['booking_code'] }}</td>
+                                    <td class="px-6 py-4 text-sm">{{ $booking['user_name'] }}</td>
+                                    <td class="px-6 py-4 text-sm">Rp
+                                        {{ number_format($booking['total_price'], 0, ',', '.') }}</td>
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="px-2 py-1 text-xs rounded-full {{ $booking['status'] == 'confirmed' ? 'bg-green-100 text-green-800' : ($booking['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ ucfirst($booking['status']) }}
+                                        </span>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                                        No bookings found
-                                    </td>
+                                    <td colspan="4" class="text-center py-4 text-gray-500">Belum ada pemesanan</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-
-        <!-- System Overview -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">System Overview</h3>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['total_users'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Total Users</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['total_admins'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Admins</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['total_buses'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Buses</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['total_bookings'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Bookings</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['active_schedules'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Active Schedules</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-gray-900">{{ $systemHealth['month_bookings'] ?? 0 }}</div>
-                        <div class="text-sm text-gray-500">Month Bookings</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white shadow rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="{{ route('superadmin.users.create') }}"
-                    class="flex items-center justify-center p-6 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50 hover:border-purple-400 transition-colors">
-                    <div class="text-center">
-                        <i class="fas fa-user-plus text-purple-600 text-3xl mb-3"></i>
-                        <p class="text-sm font-medium text-gray-900">Add New User</p>
-                        <p class="text-xs text-gray-500 mt-1">Create user account</p>
-                    </div>
-                </a>
-
-                <a href="{{ route('superadmin.settings.index') }}"
-                    class="flex items-center justify-center p-6 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-colors">
-                    <div class="text-center">
-                        <i class="fas fa-cogs text-blue-600 text-3xl mb-3"></i>
-                        <p class="text-sm font-medium text-gray-900">System Settings</p>
-                        <p class="text-xs text-gray-500 mt-1">Configure system</p>
-                    </div>
-                </a>
-
-                <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center justify-center p-6 border-2 border-dashed border-green-300 rounded-lg hover:bg-green-50 hover:border-green-400 transition-colors">
-                    <div class="text-center">
-                        <i class="fas fa-shield-alt text-green-600 text-3xl mb-3"></i>
-                        <p class="text-sm font-medium text-gray-900">Admin Panel</p>
-                        <p class="text-xs text-gray-500 mt-1">Go to admin panel</p>
-                    </div>
-                </a>
             </div>
         </div>
     </div>
 @endsection
 
-@push('styles')
-    <style>
-        /* Tambahan styling jika diperlukan */
-        .transition-colors {
-            transition: all 0.3s ease;
-        }
-
-        .bg-gradient-to-r {
-            background-size: 200% 200%;
-            animation: gradient 3s ease infinite;
-        }
-
-        @keyframes gradient {
-            0% {
-                background-position: 0% 50%;
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Grafik Penjualan (Line Chart)
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: @json($salesChart['labels']),
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: @json($salesChart['data']),
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => `Rp ${ctx.raw.toLocaleString('id-ID')}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (val) => `Rp ${val.toLocaleString('id-ID')}`
+                        }
+                    }
+                }
             }
+        });
 
-            50% {
-                background-position: 100% 50%;
+        // Grafik Rute Terlaris (Bar Chart)
+        const routesCtx = document.getElementById('routesChart').getContext('2d');
+        const routesData = @json($topRoutes);
+        new Chart(routesCtx, {
+            type: 'bar',
+            data: {
+                labels: routesData.map(item => item.route),
+                datasets: [{
+                    label: 'Jumlah Pemesanan',
+                    data: routesData.map(item => item.total_bookings),
+                    backgroundColor: 'rgba(168, 85, 247, 0.6)',
+                    borderColor: 'rgb(168, 85, 247)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
             }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-    </style>
+        });
+    </script>
 @endpush
