@@ -5,12 +5,11 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Bus;
-use App\Models\BusSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use PDF;
-use Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\BookingsExport;
 use App\Exports\RevenueExport;
 use App\Exports\BusesExport;
@@ -66,7 +65,7 @@ class ReportController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $pdf = PDF::loadView('superadmin.reports.pdf_bookings', compact('bookings', 'startDate', 'endDate'));
+        $pdf = Pdf::loadView('superadmin.reports.pdf_bookings', compact('bookings', 'startDate', 'endDate'));
         return $pdf->download('laporan_pemesanan_' . date('Ymd') . '.pdf');
     }
 
@@ -92,7 +91,7 @@ class ReportController extends Controller
             ->get();
         $totalRevenue = $revenueData->sum('total');
 
-        $pdf = PDF::loadView('superadmin.reports.pdf_revenue', compact('revenueData', 'totalRevenue', 'startDate', 'endDate'));
+        $pdf = Pdf::loadView('superadmin.reports.pdf_revenue', compact('revenueData', 'totalRevenue', 'startDate', 'endDate'));
         return $pdf->download('laporan_pendapatan_' . date('Ymd') . '.pdf');
     }
 
@@ -125,7 +124,7 @@ class ReportController extends Controller
                 return $bus;
             });
 
-        $pdf = PDF::loadView('superadmin.reports.pdf_buses', compact('buses', 'startDate', 'endDate'));
+        $pdf = Pdf::loadView('superadmin.reports.pdf_buses', compact('buses', 'startDate', 'endDate'));
         return $pdf->download('laporan_bus_' . date('Ymd') . '.pdf');
     }
 
