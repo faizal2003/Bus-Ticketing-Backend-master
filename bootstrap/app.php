@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // 🔑 Register custom middleware alias
         $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
             'check.role' => \App\Http\Middleware\CheckRole::class,
             'check.session' => \App\Http\Middleware\CheckSession::class,
             'api.response' => \App\Http\Middleware\ApiResponseMiddleware::class,
