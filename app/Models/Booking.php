@@ -253,9 +253,4 @@ class Booking extends Model
     {
         return $this->passengers->pluck('seat_number')->toArray();
     }
-
-    public function busSchedule()
-    {
-        return $this->belongsTo(BusSchedule::class, 'bus_schedule_id');
-    }
 }

@@ -33,11 +33,9 @@ class BusController extends Controller
             }
 
             // Query untuk mencari schedule
-            $query = BusSchedule::with(['bus', 'route'])
-                ->whereHas('route', function ($q) use ($request) {
-                    $q->where('origin_city', 'like', '%' . $request->origin . '%')
-                      ->where('destination_city', 'like', '%' . $request->destination . '%');
-                })
+            $query = BusSchedule::with(['bus'])
+                ->where('departure_city', 'like', '%' . $request->origin . '%')
+                ->where('arrival_city', 'like', '%' . $request->destination . '%')
                 ->whereDate('departure_time', $request->date)
                 ->where('status', 'active')
                 ->where('available_seats', '>=', $request->passengers ?? 1)
@@ -47,10 +45,10 @@ class BusController extends Controller
             if ($request->has('sort_by')) {
                 switch ($request->sort_by) {
                     case 'price_low':
-                        $query->orderBy('price', 'asc');
+                        $query->orderBy('price_per_seat', 'asc');
                         break;
                     case 'price_high':
-                        $query->orderBy('price', 'desc');
+                        $query->orderBy('price_per_seat', 'desc');
                         break;
                     case 'departure_early':
                         $query->orderBy('departure_time', 'asc');
@@ -71,6 +69,10 @@ class BusController extends Controller
                 'status' => 'success',
                 'message' => 'Buses found successfully',
                 'data' => $schedules->map(function ($schedule) {
+                    $bookedSeatsCount = $schedule->bookings()
+                        ->whereIn('booking_status', ['confirmed', 'pending'])
+                        ->sum('total_passengers');
+
                     return [
                         'id' => $schedule->id,
                         'bus_id' => $schedule->bus_id,
@@ -83,15 +85,14 @@ class BusController extends Controller
                             'facilities' => $schedule->bus->facilities ?? [],
                         ],
                         'route' => [
-                            'origin' => $schedule->route->origin_city ?? 'Unknown',
-                            'destination' => $schedule->route->destination_city ?? 'Unknown',
-                            'distance' => $schedule->route->distance ?? 0,
-                            'duration' => $schedule->route->duration ?? '0 hours',
+                            'origin' => $schedule->departure_city,
+                            'destination' => $schedule->arrival_city,
+                            'duration' => $schedule->duration,
                         ],
                         'departure_time' => $schedule->departure_time,
                         'arrival_time' => $schedule->arrival_time,
-                        'price' => (float) $schedule->price,
-                        'available_seats' => $schedule->available_seats,
+                        'price' => (float) $schedule->price_per_seat,
+                        'available_seats' => max(0, ($schedule->bus->total_seats ?? 40) - $bookedSeatsCount),
                         'status' => $schedule->status,
                     ];
                 }),
@@ -138,16 +139,20 @@ class BusController extends Controller
                         'driver_name' => $bus->driver_name,
                         'driver_phone' => $bus->driver_phone,
                         'plate_number' => $bus->plate_number,
-                        'schedules' => $bus->schedules->map(function ($schedule) {
+                        'schedules' => $bus->schedules->map(function ($schedule) use ($bus) {
+                            $bookedSeatsCount = $schedule->bookings()
+                                ->whereIn('booking_status', ['confirmed', 'pending'])
+                                ->sum('total_passengers');
+
                             return [
                                 'id' => $schedule->id,
                                 'departure_time' => $schedule->departure_time,
                                 'arrival_time' => $schedule->arrival_time,
-                                'price' => (float) $schedule->price,
-                                'available_seats' => $schedule->available_seats,
+                                'price' => (float) $schedule->price_per_seat,
+                                'available_seats' => max(0, ($bus->total_seats ?? 40) - $bookedSeatsCount),
                                 'route' => [
-                                    'origin' => $schedule->route->origin_city ?? 'Unknown',
-                                    'destination' => $schedule->route->destination_city ?? 'Unknown',
+                                    'origin' => $schedule->departure_city,
+                                    'destination' => $schedule->arrival_city,
                                 ],
                             ];
                         }),
@@ -193,30 +198,32 @@ class BusController extends Controller
 
             // Get booked seats
             $bookedSeats = [];
-            foreach ($schedule->bookings->where('booking_status', 'confirmed') as $booking) {
+            $activeBookings = $schedule->bookings->whereIn('booking_status', ['confirmed', 'pending']);
+            foreach ($activeBookings as $booking) {
                 foreach ($booking->passengers as $passenger) {
-                    $bookedSeats[] = (int) $passenger->seat_number;
+                    $bookedSeats[] = $passenger->seat_number;
                 }
             }
 
-            // Generate seat layout
+            // Generate seat layout (4 column: A, B, C, D)
             $totalSeats = $bus->total_seats ?? 40;
-            $seatsPerRow = 4; // 2-2 configuration
-            $totalRows = ceil($totalSeats / $seatsPerRow);
+            $rows = ceil($totalSeats / 4);
+            $seatLetters = ['A', 'B', 'C', 'D'];
 
             $seatLayout = [];
-            $seatNumber = 1;
+            $count = 0;
 
-            for ($row = 1; $row <= $totalRows; $row++) {
+            for ($row = 1; $row <= $rows; $row++) {
                 $rowSeats = [];
-                for ($col = 1; $col <= $seatsPerRow; $col++) {
-                    if ($seatNumber <= $totalSeats) {
+                foreach ($seatLetters as $letter) {
+                    if ($count < $totalSeats) {
+                        $seatNumber = $letter . $row;
                         $rowSeats[] = [
                             'number' => $seatNumber,
                             'status' => in_array($seatNumber, $bookedSeats) ? 'booked' : 'available',
                             'type' => 'regular',
                         ];
-                        $seatNumber++;
+                        $count++;
                     }
                 }
                 $seatLayout[] = $rowSeats;
@@ -234,7 +241,7 @@ class BusController extends Controller
                     'schedule' => [
                         'id' => $schedule->id,
                         'departure_time' => $schedule->departure_time,
-                        'price' => (float) $schedule->price,
+                        'price' => (float) $schedule->price_per_seat,
                     ],
                     'seat_layout' => $seatLayout,
                     'booked_seats' => $bookedSeats,
@@ -256,24 +263,20 @@ class BusController extends Controller
         }
     }
 
-    /**
-     * Get popular routes
-     */
     public function popularRoutes(Request $request)
     {
         try {
-            $popularRoutes = DB::table('routes')
-                ->join('bus_schedules', 'routes.id', '=', 'bus_schedules.route_id')
+            $popularRoutes = DB::table('bus_schedules')
                 ->join('bookings', 'bus_schedules.id', '=', 'bookings.schedule_id')
                 ->select(
-                    'routes.origin_city',
-                    'routes.destination_city',
+                    'bus_schedules.departure_city as origin_city',
+                    'bus_schedules.arrival_city as destination_city',
                     DB::raw('COUNT(bookings.id) as booking_count'),
-                    DB::raw('AVG(bus_schedules.price) as avg_price')
+                    DB::raw('AVG(bus_schedules.price_per_seat) as avg_price')
                 )
                 ->where('bookings.booking_status', 'confirmed')
                 ->where('bookings.created_at', '>=', now()->subDays(30))
-                ->groupBy('routes.origin_city', 'routes.destination_city')
+                ->groupBy('bus_schedules.departure_city', 'bus_schedules.arrival_city')
                 ->orderBy('booking_count', 'desc')
                 ->limit(10)
                 ->get();

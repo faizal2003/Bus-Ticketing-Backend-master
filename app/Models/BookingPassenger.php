@@ -9,6 +9,8 @@ class BookingPassenger extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'booking_id',
         'full_name',

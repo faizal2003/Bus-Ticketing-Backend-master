@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BusSchedule;
 use App\Models\BusSeat;
+use App\Models\Payment;
+use App\Models\Ticket;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -65,10 +67,17 @@ class BookingController extends Controller
 
             // Check seat availability and duplicates
             $seatNumbers = [];
+            
+            // Get already booked seats for this schedule
+            $bookedSeats = \App\Models\BookingPassenger::whereHas('booking', function($query) use ($schedule) {
+                $query->where('schedule_id', $schedule->id)
+                      ->whereIn('booking_status', ['confirmed', 'pending']);
+            })->pluck('seat_number')->toArray();
+
             foreach ($request->passengers as $passenger) {
                 $seatNumber = $passenger['seat_number'];
 
-                // Check for duplicate seat selection
+                // Check for duplicate seat selection in request
                 if (in_array($seatNumber, $seatNumbers)) {
                     return response()->json([
                         'status' => 'error',
@@ -77,22 +86,41 @@ class BookingController extends Controller
                 }
                 $seatNumbers[] = $seatNumber;
 
-                // Check if seat exists and is available
-                $seat = BusSeat::where('bus_id', $schedule->bus_id)
-                    ->where('seat_number', $seatNumber)
-                    ->where('is_available', true)
-                    ->first();
-
-                if (!$seat) {
+                // Check if seat is already booked for this schedule
+                if (in_array($seatNumber, $bookedSeats)) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Seat not available: ' . $seatNumber
+                        'message' => 'Seat already taken: ' . $seatNumber
+                    ], 400);
+                }
+
+                // Basic validation for seat number format (Letter + Number)
+                if (!preg_match('/^[A-D][1-9][0-9]*$/', $seatNumber)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Invalid seat format: ' . $seatNumber
+                    ], 400);
+                }
+
+                // Check if seat index is within bus capacity
+                $seatLetter = substr($seatNumber, 0, 1);
+                $seatRow = intval(substr($seatNumber, 1));
+                $letterIndex = array_search($seatLetter, ['A', 'B', 'C', 'D']);
+                $seatIndex = ($seatRow - 1) * 4 + $letterIndex + 1;
+
+                if ($seatIndex > ($schedule->bus->total_seats ?? 40)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Seat number exceeds bus capacity: ' . $seatNumber
                     ], 400);
                 }
             }
 
-            // Calculate total price
-            $totalPrice = $schedule->price_per_seat * $passengerCount;
+            // Calculate total price (Ticket + Tax 10% + Service Fee 5000)
+            $ticketTotal = $schedule->price_per_seat * $passengerCount;
+            $tax = $ticketTotal * 0.1;
+            $serviceFee = 5000;
+            $totalPrice = $ticketTotal + $tax + $serviceFee;
 
             // Create booking
             $booking = Booking::create([
@@ -109,11 +137,6 @@ class BookingController extends Controller
             // Add passengers
             foreach ($request->passengers as $passengerData) {
                 $booking->addPassenger($passengerData);
-
-                // Mark seat as temporarily unavailable
-                BusSeat::where('bus_id', $schedule->bus_id)
-                    ->where('seat_number', $passengerData['seat_number'])
-                    ->update(['is_available' => false]);
             }
 
             // Update schedule available seats
@@ -180,6 +203,7 @@ class BookingController extends Controller
                         'formatted_total_price' => 'Rp ' . number_format($booking->total_price, 0, ',', '.'),
                         'booking_status' => $booking->booking_status,
                         'payment_status' => $booking->payment_status,
+                        'seats' => $booking->passengers->pluck('seat_number'),
                         'created_at' => $booking->created_at->format('Y-m-d H:i:s'),
                         'has_ticket' => !is_null($booking->ticket),
                         'ticket_status' => $booking->ticket->status ?? null,
@@ -207,9 +231,13 @@ class BookingController extends Controller
     public function show($id, Request $request)
     {
         try {
-            $booking = Booking::with(['schedule', 'schedule.bus', 'passengers', 'payment', 'ticket'])
+            $booking = Booking::with(['schedule.bus', 'passengers', 'payment', 'ticket'])
+                ->where(function($query) use ($id) {
+                    $query->where('id', $id)
+                          ->orWhere('booking_code', $id);
+                })
                 ->where('user_id', $request->user()->id)
-                ->find($id);
+                ->first();
 
             if (!$booking) {
                 return response()->json([
@@ -292,15 +320,13 @@ class BookingController extends Controller
                 ], 404);
             }
 
-            // Mark seats as available again
-            foreach ($booking->passengers as $passenger) {
-                BusSeat::where('bus_id', $booking->schedule->bus_id)
-                    ->where('seat_number', $passenger->seat_number)
-                    ->update(['is_available' => true]);
-            }
-
             // Update booking status
             $booking->markAsCancelled();
+
+            // Update available seats for this schedule
+            if ($booking->schedule) {
+                $booking->schedule->updateAvailableSeats();
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -315,6 +341,133 @@ class BookingController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to cancel booking',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm payment for a booking
+     */
+    public function confirmPayment($id, Request $request)
+    {
+        try {
+            $booking = Booking::with(['schedule', 'passengers'])
+                ->where(function($query) use ($id) {
+                    $query->where('id', $id)
+                          ->orWhere('booking_code', $id);
+                })
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found'
+                ], 404);
+            }
+
+            // Check if user owns this booking
+            if ($booking->user_id !== $request->user()->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+
+            // Update booking status
+            $booking->update([
+                'booking_status' => 'confirmed',
+                'payment_status' => 'paid',
+                'payment_method' => $request->payment_method ?? 'transfer',
+                'payment_date' => now(),
+            ]);
+
+            // Create Payment record
+            Payment::create([
+                'booking_id' => $booking->id,
+                'transaction_id' => 'TRX-' . strtoupper(uniqid()),
+                'amount' => $booking->total_price,
+                'payment_method' => $request->payment_method ?? 'transfer',
+                'status' => 'paid',
+                'payment_date' => now(),
+            ]);
+
+            // Create Ticket
+            $ticketCode = Ticket::generateTicketCode();
+            $ticket = Ticket::create([
+                'ticket_code' => $ticketCode,
+                'booking_id' => $booking->id,
+                'status' => 'active',
+                'boarding_status' => 'pending',
+                'qr_code' => base64_encode(json_encode([
+                    'ticket_code' => $ticketCode,
+                    'booking_id' => $booking->id,
+                ]))
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment confirmed successfully',
+                'data' => [
+                    'booking_id' => $booking->id,
+                    'booking_status' => $booking->booking_status,
+                    'payment_status' => $booking->payment_status,
+                    'ticket_code' => $ticket->ticket_code,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to confirm payment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get tickets for a booking
+     */
+    public function getTickets($id, Request $request)
+    {
+        try {
+            $booking = Booking::with(['ticket', 'passengers'])
+                ->where(function($query) use ($id) {
+                    $query->where('id', $id)
+                          ->orWhere('booking_code', $id);
+                })
+                ->first();
+
+            if (!$booking || !$booking->ticket) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Ticket not found'
+                ], 404);
+            }
+
+            // Check if user owns this booking
+            if ($booking->user_id !== $request->user()->id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'ticket' => [
+                        'ticket_code' => $booking->ticket->ticket_code,
+                        'status' => $booking->ticket->status,
+                        'boarding_status' => $booking->ticket->boarding_status,
+                        'qr_data' => base64_encode($booking->ticket->generateQrData()),
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get tickets',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -9,6 +9,8 @@ class Payment extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'booking_id',
         'user_id',

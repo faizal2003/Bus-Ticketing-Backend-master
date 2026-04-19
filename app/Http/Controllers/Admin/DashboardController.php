@@ -31,7 +31,7 @@ class DashboardController extends Controller
                 ->where('booking_status', 'confirmed')
                 ->sum('total_passengers');
 
-            $recentBookings = Booking::with(['user:id,name', 'busSchedule.bus'])
+            $recentBookings = Booking::with(['user:id,name', 'schedule.bus'])
                 ->latest()
                 ->take(5)
                 ->get()

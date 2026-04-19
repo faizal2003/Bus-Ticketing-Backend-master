@@ -9,6 +9,8 @@ class ConductorLog extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     protected $fillable = [
         'conductor_id',
         'ticket_id',

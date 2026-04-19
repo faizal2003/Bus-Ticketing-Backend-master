@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Pemesanan: ' . $booking['booking_code'])
+@section('title', 'Detail Pemesanan: ' . $formattedBooking['booking_code'])
 
 @section('content')
     <div class="max-w-6xl mx-auto">
@@ -9,30 +9,30 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Pemesanan: {{ $booking['booking_code'] }}</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Pemesanan: {{ $formattedBooking['booking_code'] }}</h2>
                         <div class="mt-2 flex items-center space-x-4">
                             <span
                                 class="px-3 py-1 rounded-full text-sm font-medium
-                            {{ $booking['status'] === 'confirmed'
+                            {{ $formattedBooking['status'] === 'confirmed'
                                 ? 'bg-green-100 text-green-800'
-                                : ($booking['status'] === 'pending'
+                                : ($formattedBooking['status'] === 'pending'
                                     ? 'bg-yellow-100 text-yellow-800'
                                     : 'bg-red-100 text-red-800') }}">
-                                {{ $booking['status'] }}
+                                {{ $formattedBooking['status'] }}
                             </span>
                             <span
                                 class="px-3 py-1 rounded-full text-sm font-medium
-                            {{ $booking['payment_status'] === 'paid'
+                            {{ $formattedBooking['payment_status'] === 'paid'
                                 ? 'bg-blue-100 text-blue-800'
-                                : ($booking['payment_status'] === 'pending'
+                                : ($formattedBooking['payment_status'] === 'pending'
                                     ? 'bg-yellow-100 text-yellow-800'
                                     : 'bg-red-100 text-red-800') }}">
-                                {{ $booking['payment_status'] }}
+                                {{ $formattedBooking['payment_status'] }}
                             </span>
                         </div>
                     </div>
                     <div class="flex space-x-2">
-                        @if ($booking['status'] == 'pending')
+                        @if ($formattedBooking['status'] == 'pending')
                             <form action="#" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" onclick="return confirm('Konfirmasi pemesanan ini?')"
@@ -69,21 +69,21 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-lg font-medium text-gray-900">
-                                            {{ $booking['departure_city'] }} → {{ $booking['arrival_city'] }}
+                                            {{ $formattedBooking['departure_city'] }} → {{ $formattedBooking['arrival_city'] }}
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            {{ $booking['bus_name'] }} ({{ $booking['bus_number'] }})
+                                            {{ $formattedBooking['bus_name'] }} ({{ $formattedBooking['bus_number'] }})
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mt-4 grid grid-cols-2 gap-4">
                                     <div>
                                         <div class="text-sm text-gray-600">Keberangkatan</div>
-                                        <div class="font-medium">{{ $booking['departure_time'] }}</div>
+                                        <div class="font-medium">{{ $formattedBooking['departure_time'] }}</div>
                                     </div>
                                     <div>
                                         <div class="text-sm text-gray-600">Kedatangan</div>
-                                        <div class="font-medium">{{ $booking['arrival_time'] }}</div>
+                                        <div class="font-medium">{{ $formattedBooking['arrival_time'] }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -94,25 +94,25 @@
                                 <div class="space-y-3">
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Nama Pemesan:</div>
-                                        <div class="w-2/3 font-medium">{{ $booking['passenger_name'] }}</div>
+                                        <div class="w-2/3 font-medium">{{ $formattedBooking['passenger_name'] }}</div>
                                     </div>
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Email:</div>
                                         <div class="w-2/3 font-medium">
-                                            {{ $booking['passenger_email'] ?? 'Tidak tersedia' }}</div>
+                                            {{ $formattedBooking['passenger_email'] ?? 'Tidak tersedia' }}</div>
                                     </div>
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Telepon:</div>
                                         <div class="w-2/3 font-medium">
-                                            {{ $booking['passenger_phone'] ?? 'Tidak tersedia' }}</div>
+                                            {{ $formattedBooking['passenger_phone'] ?? 'Tidak tersedia' }}</div>
                                     </div>
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Jumlah Penumpang:</div>
-                                        <div class="w-2/3 font-medium">{{ $booking['seat_count'] }} orang</div>
+                                        <div class="w-2/3 font-medium">{{ $formattedBooking['seat_count'] }} orang</div>
                                     </div>
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Kursi:</div>
-                                        <div class="w-2/3 font-medium">{{ implode(', ', $booking['seats']) }}</div>
+                                        <div class="w-2/3 font-medium">{{ implode(', ', $formattedBooking['seats']) }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -124,12 +124,12 @@
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Total Harga:</div>
                                         <div class="w-2/3 font-medium text-green-600">
-                                            Rp {{ number_format($booking['total_price'], 0, ',', '.') }}
+                                            Rp {{ number_format($formattedBooking['total_price'], 0, ',', '.') }}
                                         </div>
                                     </div>
                                     <div class="flex">
                                         <div class="w-1/3 text-gray-600">Metode Pembayaran:</div>
-                                        <div class="w-2/3 font-medium">{{ $booking['payment_method'] ?? 'Transfer Bank' }}
+                                        <div class="w-2/3 font-medium">{{ $formattedBooking['payment_method'] ?? 'Transfer Bank' }}
                                         </div>
                                     </div>
                                     <div class="flex">
@@ -137,55 +137,55 @@
                                         <div class="w-2/3">
                                             <span
                                                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $booking['payment_status'] === 'paid'
+                                            {{ $formattedBooking['payment_status'] === 'paid'
                                                 ? 'bg-blue-100 text-blue-800'
-                                                : ($booking['payment_status'] === 'pending'
+                                                : ($formattedBooking['payment_status'] === 'pending'
                                                     ? 'bg-yellow-100 text-yellow-800'
                                                     : 'bg-red-100 text-red-800') }}">
-                                                {{ $booking['payment_status'] }}
+                                                {{ $formattedBooking['payment_status'] }}
                                             </span>
                                         </div>
                                     </div>
-                                    @if ($booking['payment_date'])
+                                    @if ($formattedBooking['payment_date'])
                                         <div class="flex">
                                             <div class="w-1/3 text-gray-600">Tanggal Pembayaran:</div>
-                                            <div class="w-2/3 font-medium">{{ $booking['payment_date'] }}</div>
+                                            <div class="w-2/3 font-medium">{{ $formattedBooking['payment_date'] }}</div>
                                         </div>
                                     @endif
                                 </div>
                             </div>
 
                             <!-- Ticket Info -->
-                            @if ($booking['ticket_code'])
+                            @if ($formattedBooking['ticket_code'])
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-700 mb-2">Informasi Tiket</h4>
                                     <div class="space-y-3">
                                         <div class="flex">
                                             <div class="w-1/3 text-gray-600">Kode Tiket:</div>
-                                            <div class="w-2/3 font-medium">{{ $booking['ticket_code'] }}</div>
+                                            <div class="w-2/3 font-medium">{{ $formattedBooking['ticket_code'] }}</div>
                                         </div>
                                         <div class="flex">
                                             <div class="w-1/3 text-gray-600">Status Tiket:</div>
                                             <div class="w-2/3">
                                                 <span
                                                     class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $booking['ticket_status'] === 'active'
+                                            {{ $formattedBooking['ticket_status'] === 'active'
                                                 ? 'bg-green-100 text-green-800'
-                                                : ($booking['ticket_status'] === 'used'
+                                                : ($formattedBooking['ticket_status'] === 'used'
                                                     ? 'bg-blue-100 text-blue-800'
                                                     : 'bg-gray-100 text-gray-800') }}">
-                                                    {{ $booking['ticket_status'] }}
+                                                    {{ $formattedBooking['ticket_status'] }}
                                                 </span>
                                             </div>
                                         </div>
-                                        @if ($booking['boarding_status'])
+                                        @if ($formattedBooking['boarding_status'])
                                             <div class="flex">
                                                 <div class="w-1/3 text-gray-600">Status Naik:</div>
                                                 <div class="w-2/3">
                                                     <span
                                                         class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                            {{ $booking['boarding_status'] === 'boarded' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                        {{ $booking['boarding_status'] }}
+                                            {{ $formattedBooking['boarding_status'] === 'boarded' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                        {{ $formattedBooking['boarding_status'] }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -202,7 +202,7 @@
 
                         <!-- Action Buttons -->
                         <div class="bg-white border border-gray-200 rounded-lg p-4 space-y-3 mb-6">
-                            @if ($booking['status'] == 'pending')
+                            @if ($formattedBooking['status'] == 'pending')
                                 <form action="#" method="POST" class="w-full">
                                     @csrf
                                     <button type="submit" onclick="return confirm('Konfirmasi pemesanan ini?')"
@@ -223,7 +223,7 @@
                                 </form>
                             @endif
 
-                            @if ($booking['status'] == 'confirmed' && !$booking['ticket_code'])
+                            @if ($formattedBooking['status'] == 'confirmed' && !$formattedBooking['ticket_code'])
                                 <form action="#" method="POST" class="w-full">
                                     @csrf
                                     <button type="submit" onclick="return confirm('Generate tiket untuk pemesanan ini?')"
@@ -253,11 +253,11 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-900">Pemesanan dibuat</p>
-                                        <p class="text-xs text-gray-500">{{ $booking['created_at'] }}</p>
+                                        <p class="text-xs text-gray-500">{{ $formattedBooking['created_at'] }}</p>
                                     </div>
                                 </div>
 
-                                @if ($booking['payment_date'])
+                                @if ($formattedBooking['payment_date'])
                                     <div class="flex">
                                         <div class="flex-shrink-0">
                                             <div
@@ -267,12 +267,12 @@
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium text-gray-900">Pembayaran diterima</p>
-                                            <p class="text-xs text-gray-500">{{ $booking['payment_date'] }}</p>
+                                            <p class="text-xs text-gray-500">{{ $formattedBooking['payment_date'] }}</p>
                                         </div>
                                     </div>
                                 @endif
 
-                                @if ($booking['status'] == 'confirmed')
+                                @if ($formattedBooking['status'] == 'confirmed')
                                     <div class="flex">
                                         <div class="flex-shrink-0">
                                             <div
@@ -287,7 +287,7 @@
                                     </div>
                                 @endif
 
-                                @if ($booking['boarding_status'] == 'boarded')
+                                @if ($formattedBooking['boarding_status'] == 'boarded')
                                     <div class="flex">
                                         <div class="flex-shrink-0">
                                             <div
@@ -305,7 +305,7 @@
                         </div>
 
                         <!-- QR Code (if available) -->
-                        @if ($booking['ticket_code'])
+                        @if ($formattedBooking['ticket_code'])
                             <div class="mt-6 bg-white border border-gray-200 rounded-lg p-4 text-center">
                                 <h4 class="text-sm font-medium text-gray-700 mb-3">QR Code Tiket</h4>
                                 <div class="bg-gray-100 p-4 rounded-lg inline-block">
@@ -321,7 +321,7 @@
                 </div>
 
                 <!-- Notes -->
-                @if ($booking['notes'])
+                @if ($formattedBooking['notes'])
                     <div class="mt-8">
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">Catatan</h3>
                         <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
@@ -330,7 +330,7 @@
                                     <i class="fas fa-sticky-note text-yellow-400"></i>
                                 </div>
                                 <div class="ml-3">
-                                    <p class="text-sm text-yellow-700">{{ $booking['notes'] }}</p>
+                                    <p class="text-sm text-yellow-700">{{ $formattedBooking['notes'] }}</p>
                                 </div>
                             </div>
                         </div>

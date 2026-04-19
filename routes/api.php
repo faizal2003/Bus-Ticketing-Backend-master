@@ -27,9 +27,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // 🚌 Bus Routes (Untuk Penumpang)
     Route::prefix('buses')->group(function () {
         Route::get('/search', [BusController::class, 'search']);
+        Route::get('/popular-routes', [BusController::class, 'popularRoutes']);
         Route::get('/{bus}', [BusController::class, 'show']);
         Route::get('/{bus}/seats', [BusController::class, 'getSeatLayout']);
-        Route::get('/popular-routes', [BusController::class, 'popularRoutes']);
     });
 
     // 📅 Schedule Routes

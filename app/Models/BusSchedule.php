@@ -135,8 +135,11 @@ class BusSchedule extends Model
 
     public function updateAvailableSeats()
     {
-        $confirmedBookings = $this->confirmedBookings()->sum('total_passengers');
-        $this->available_seats = max(0, $this->bus->total_seats - $confirmedBookings);
+        $bookedSeatsCount = $this->bookings()
+            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->sum('total_passengers');
+            
+        $this->available_seats = max(0, ($this->bus->total_seats ?? 40) - $bookedSeatsCount);
         $this->save();
 
         return $this;
@@ -177,9 +180,9 @@ class BusSchedule extends Model
             ->flatten()
             ->toArray();
 
+        // Get all seats for the bus and filter out booked ones
         return $this->bus->seats()
             ->whereNotIn('seat_number', $bookedSeats)
-            ->where('is_available', true)
             ->get();
     }
 }

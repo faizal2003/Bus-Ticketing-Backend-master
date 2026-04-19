@@ -18,7 +18,8 @@ class ConductorController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'qr_data' => 'required|string',
+                'qr_data' => 'nullable|string',
+                'ticket_code' => 'nullable|string',
                 'action' => 'nullable|in:scan,board',
             ]);
 
@@ -30,17 +31,29 @@ class ConductorController extends Controller
                 ], 422);
             }
 
-            // Decode QR data
-            $qrData = json_decode(base64_decode($request->qr_data), true);
+            $ticketCode = null;
 
-            if (!$qrData || !isset($qrData['ticket_code'])) {
+            if ($request->has('qr_data')) {
+                // Decode QR data
+                $qrData = json_decode(base64_decode($request->qr_data), true);
+                if (!$qrData || !isset($qrData['ticket_code'])) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Invalid QR code data'
+                    ], 400);
+                }
+                $ticketCode = $qrData['ticket_code'];
+            } elseif ($request->has('ticket_code')) {
+                $ticketCode = $request->ticket_code;
+            }
+
+            if (!$ticketCode) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Invalid QR code data'
+                    'message' => 'Ticket code or QR data is required'
                 ], 400);
             }
 
-            $ticketCode = $qrData['ticket_code'];
             $ticket = Ticket::with(['booking.user', 'booking.schedule', 'booking.schedule.bus', 'booking.passengers'])
                 ->where('ticket_code', $ticketCode)
                 ->first();
@@ -89,7 +102,7 @@ class ConductorController extends Controller
             }
 
             // Check if ticket is already scanned
-            if ($ticket->scanned_at) {
+            if ($ticket->scanned_at && !$request->action === 'board') {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Ticket already scanned at ' . $ticket->scanned_at->format('H:i:s'),
@@ -102,7 +115,7 @@ class ConductorController extends Controller
             }
 
             // Check if bus has departed
-            if ($ticket->booking->schedule->departure_time < now()) {
+            if ($ticket->booking->schedule->departure_time < now()->subMinutes(30)) { // Allow 30 mins after departure
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Bus has already departed',
@@ -118,15 +131,22 @@ class ConductorController extends Controller
 
             if ($action === 'board') {
                 // Mark as boarded
-                $ticket->markAsScanned($request->user()->id);
-                $ticket->markAsUsed();
+                $ticket->update([
+                    'scanned_at' => now(),
+                    'scanned_by' => $request->user()->id,
+                    'boarding_status' => 'boarded'
+                ]);
 
                 // Log boarding
-                ConductorLog::logBoarding(
-                    $request->user()->id,
-                    $ticket->id,
-                    $ticket->booking->passengers->first()->seat_number ?? 'Unknown'
-                );
+                ConductorLog::create([
+                    'conductor_id' => $request->user()->id,
+                    'ticket_id' => $ticket->id,
+                    'action' => 'board_passenger',
+                    'details' => [
+                        'seat_number' => $ticket->booking->passengers->first()->seat_number ?? 'Unknown',
+                        'board_time' => now()->toDateTimeString(),
+                    ],
+                ]);
 
                 $message = 'Passenger boarded successfully';
             } else {
@@ -134,7 +154,15 @@ class ConductorController extends Controller
                 $ticket->update(['scanned_at' => now()]);
 
                 // Log scan
-                ConductorLog::logScan($request->user()->id, $ticket->id, 'valid');
+                ConductorLog::create([
+                    'conductor_id' => $request->user()->id,
+                    'ticket_id' => $ticket->id,
+                    'action' => 'scan_ticket',
+                    'details' => [
+                        'result' => 'valid',
+                        'scan_time' => now()->toDateTimeString(),
+                    ],
+                ]);
 
                 $message = 'Ticket validated successfully';
             }
@@ -163,19 +191,67 @@ class ConductorController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            // Log error
-            ConductorLog::create([
-                'conductor_id' => $request->user()->id,
-                'action' => 'scan_error',
-                'details' => [
-                    'error' => $e->getMessage(),
-                    'scan_time' => now()->toDateTimeString(),
-                ],
-            ]);
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to scan ticket',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get passenger list for a schedule
+     */
+    public function passengerList($scheduleId)
+    {
+        try {
+            $schedule = BusSchedule::with(['bus', 'bookings' => function($query) {
+                $query->where('booking_status', 'confirmed');
+            }, 'bookings.passengers', 'bookings.ticket'])->find($scheduleId);
+
+            if (!$schedule) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Schedule not found'
+                ], 404);
+            }
+
+            $passengers = [];
+            foreach ($schedule->bookings as $booking) {
+                foreach ($booking->passengers as $passenger) {
+                    $passengers[] = [
+                        'id' => $passenger->id,
+                        'ticket_id' => $booking->ticket->id ?? null,
+                        'ticket_code' => $booking->ticket->ticket_code ?? null,
+                        'name' => $passenger->full_name,
+                        'seat_number' => $passenger->seat_number,
+                        'boarding_status' => $booking->ticket->boarding_status ?? 'pending',
+                        'phone' => $passenger->phone,
+                    ];
+                }
+            }
+
+            // Sort by seat number
+            usort($passengers, function($a, $b) {
+                return (int)$a['seat_number'] <=> (int)$b['seat_number'];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Passenger list retrieved successfully',
+                'data' => [
+                    'schedule_id' => $schedule->id,
+                    'bus_name' => $schedule->bus->bus_name,
+                    'departure_time' => $schedule->departure_time->format('Y-m-d H:i:s'),
+                    'total_passengers' => count($passengers),
+                    'passengers' => $passengers
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve passenger list',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -189,20 +265,15 @@ class ConductorController extends Controller
         try {
             $user = $request->user();
 
-            // Get schedules for today where conductor might be assigned
-            // This assumes conductor is assigned to specific buses
+            // Get schedules for today
             $schedules = BusSchedule::with(['bus', 'bookings.ticket'])
                 ->whereDate('departure_time', today())
-                ->where('departure_time', '>', now())
                 ->orderBy('departure_time', 'asc')
                 ->get()
                 ->map(function ($schedule) {
-                    $bookedPassengers = $schedule->bookings()
+                    $bookedCount = $schedule->bookings()
                         ->where('booking_status', 'confirmed')
-                        ->with('passengers')
-                        ->get()
-                        ->pluck('passengers')
-                        ->flatten();
+                        ->count();
 
                     $boardedCount = $schedule->bookings()
                         ->where('booking_status', 'confirmed')
@@ -222,7 +293,7 @@ class ConductorController extends Controller
                         'arrival_city' => $schedule->arrival_city,
                         'departure_time' => $schedule->departure_time->format('Y-m-d H:i:s'),
                         'arrival_time' => $schedule->arrival_time->format('Y-m-d H:i:s'),
-                        'total_passengers' => $bookedPassengers->count(),
+                        'total_passengers' => $bookedCount,
                         'boarded_passengers' => $boardedCount,
                         'status' => $schedule->status,
                     ];
@@ -246,7 +317,7 @@ class ConductorController extends Controller
     /**
      * Update ticket boarding status
      */
-    public function updateStatus($ticketId, Request $request)
+    public function updateTicketStatus($ticketId, Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -262,7 +333,7 @@ class ConductorController extends Controller
                 ], 422);
             }
 
-            $ticket = Ticket::find($ticketId);
+            $ticket = Ticket::with('booking.passengers')->find($ticketId);
 
             if (!$ticket) {
                 return response()->json([

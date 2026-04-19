@@ -11,7 +11,7 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Booking::with(['user', 'busSchedule.bus']);
+        $query = Booking::with(['user', 'schedule.bus']);
 
         // Apply filters
         if ($request->filled('booking_code')) {
@@ -56,7 +56,7 @@ class BookingController extends Controller
     {
         $booking = Booking::with([
             'user',
-            'busSchedule.bus',
+            'schedule.bus',
             'passengers',
             'payment',
             'ticket'
@@ -69,24 +69,24 @@ class BookingController extends Controller
             'passenger_name' => $booking->user->name,
             'passenger_email' => $booking->user->email,
             'passenger_phone' => $booking->user->phone,
-            'departure_city' => $booking->busSchedule->departure_city,
-            'arrival_city' => $booking->busSchedule->arrival_city,
-            'departure_time' => Carbon::parse($booking->busSchedule->departure_time)->format('d M Y, H:i'),
-            'arrival_time' => Carbon::parse($booking->busSchedule->arrival_time)->format('d M Y, H:i'),
-            'bus_name' => $booking->busSchedule->bus->bus_name ?? 'Bus tidak ditemukan',
-            'bus_number' => $booking->busSchedule->bus->bus_number ?? '-',
+            'departure_city' => $booking->schedule->departure_city,
+            'arrival_city' => $booking->schedule->arrival_city,
+            'departure_time' => Carbon::parse($booking->schedule->departure_time)->format('d M Y, H:i'),
+            'arrival_time' => Carbon::parse($booking->schedule->arrival_time)->format('d M Y, H:i'),
+            'bus_name' => $booking->schedule->bus->bus_name ?? 'Bus tidak ditemukan',
+            'bus_number' => $booking->schedule->bus->bus_number ?? '-',
             'seat_count' => $booking->total_passengers,
             'seats' => $booking->passengers->pluck('seat_number')->toArray(),
             'total_price' => $booking->total_price,
             'status' => $booking->booking_status,
             'payment_status' => $booking->payment_status,
-            'payment_method' => $booking->payment->payment_method ?? null,
-            'payment_date' => $booking->payment->payment_date
+            'payment_method' => $booking->payment?->payment_method,
+            'payment_date' => $booking->payment?->payment_date
                 ? Carbon::parse($booking->payment->payment_date)->format('d M Y, H:i')
                 : null,
-            'ticket_code' => $booking->ticket->ticket_code ?? null,
-            'ticket_status' => $booking->ticket->status ?? null,
-            'boarding_status' => $booking->ticket->boarding_status ?? null,
+            'ticket_code' => $booking->ticket?->ticket_code,
+            'ticket_status' => $booking->ticket?->status,
+            'boarding_status' => $booking->ticket?->boarding_status,
             'created_at' => Carbon::parse($booking->created_at)->format('d M Y, H:i'),
             'notes' => $booking->notes,
             'original' => $booking // Keep original object for actions
@@ -129,7 +129,7 @@ class BookingController extends Controller
             ]);
 
             // Update available seats
-            $booking->busSchedule->updateAvailableSeats();
+            $booking->schedule->updateAvailableSeats();
 
             return redirect()->route('admin.bookings.show', $id)
                 ->with('success', 'Pemesanan berhasil dibatalkan');
@@ -148,7 +148,7 @@ class BookingController extends Controller
         $qrData = json_encode([
             'booking_code' => $booking->booking_code,
             'ticket_code' => $ticketCode,
-            'schedule_id' => $booking->busSchedule_id,
+            'schedule_id' => $booking->schedule_id,
             'timestamp' => now()->timestamp
         ]);
 
