@@ -7,6 +7,7 @@
     <title>Dashboard - Bus Ticketing</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+{{-- test --}}
 
 <body class="bg-gray-100">
     <div class="min-h-screen">
