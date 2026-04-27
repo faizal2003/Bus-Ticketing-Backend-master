@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
@@ -93,6 +94,24 @@ class BookingController extends Controller
         ];
 
         return view('admin.bookings.show', compact('formattedBooking'));
+    }
+
+    public function print($id)
+    {
+        $booking = Booking::with([
+            'user',
+            'schedule.bus',
+            'passengers',
+            'payment',
+            'ticket'
+        ])->findOrFail($id);
+
+        if (!$booking->ticket) {
+            return redirect()->back()->with('error', 'Tiket belum di-generate untuk pemesanan ini.');
+        }
+
+        $pdf = Pdf::loadView('admin.bookings.ticket-pdf', compact('booking'));
+        return $pdf->stream('ticket-' . $booking->ticket->ticket_code . '.pdf');
     }
 
     public function confirm($id)

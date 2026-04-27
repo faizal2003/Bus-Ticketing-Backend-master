@@ -234,7 +234,7 @@
                                 </form>
                             @endif
 
-                            <a href="#"
+                            <a href="{{ route('admin.bookings.print', $formattedBooking['id']) }}" target="_blank"
                                 class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                                 <i class="fas fa-print mr-2"></i>
                                 Cetak Tiket
@@ -308,13 +308,16 @@
                         @if ($formattedBooking['ticket_code'])
                             <div class="mt-6 bg-white border border-gray-200 rounded-lg p-4 text-center">
                                 <h4 class="text-sm font-medium text-gray-700 mb-3">QR Code Tiket</h4>
-                                <div class="bg-gray-100 p-4 rounded-lg inline-block">
-                                    <!-- QR Code placeholder -->
-                                    <div class="h-32 w-32 bg-white flex items-center justify-center mx-auto">
-                                        <i class="fas fa-qrcode text-gray-400 text-4xl"></i>
-                                    </div>
+                                <div class="bg-white p-4 rounded-lg inline-block border border-gray-100">
+                                    {!! QrCode::size(150)->generate(json_encode([
+                                        'ticket_code' => $formattedBooking['ticket_code'],
+                                        'booking_id' => $formattedBooking['id'],
+                                        'passenger_name' => $formattedBooking['passenger_name'],
+                                        'timestamp' => now()->timestamp,
+                                    ])) !!}
                                 </div>
-                                <p class="text-xs text-gray-500 mt-2">Scan untuk validasi</p>
+                                <p class="text-xs text-gray-500 mt-2">Scan untuk validasi boarding</p>
+                                <p class="text-sm font-mono mt-1 text-blue-600">{{ $formattedBooking['ticket_code'] }}</p>
                             </div>
                         @endif
                     </div>

@@ -90,6 +90,7 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', [AdminBookingController::class, 'index'])->name('index');
             Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
+            Route::get('/{booking}/print', [AdminBookingController::class, 'print'])->name('print');
             Route::post('/{booking}/confirm', [AdminBookingController::class, 'confirm'])->name('confirm');
             Route::post('/{booking}/cancel', [AdminBookingController::class, 'cancel'])->name('cancel');
         });
