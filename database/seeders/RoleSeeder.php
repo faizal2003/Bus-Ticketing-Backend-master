@@ -50,7 +50,7 @@ class RoleSeeder extends Seeder
 
         $admin = Role::create(['name' => 'admin', 'guard_name' => 'web']);
         $admin->givePermissionTo([
-            'view_buses', 'create_buses', 'edit_buses',
+            'view_buses',
             'view_schedules', 'create_schedules', 'edit_schedules',
             'view_bookings', 'view_payments',
             'view_reports', 'view_dashboard',

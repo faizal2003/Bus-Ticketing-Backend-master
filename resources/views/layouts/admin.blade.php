@@ -35,11 +35,19 @@
             </div>
 
             <nav class="mt-6">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.dashboard') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.dashboard') : route('admin.dashboard') }}"
+                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard')) ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
                     <i class="fas fa-tachometer-alt w-6"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
+
+                @if (auth()->user()->role === 'super_admin')
+                    <a href="{{ route('superadmin.users.index') }}"
+                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.users.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                        <i class="fas fa-users w-6"></i>
+                        <span class="ml-3">User Management</span>
+                    </a>
+                @endif
 
                 <a href="{{ route('admin.buses.index') }}"
                     class="flex items-center px-6 py-3 {{ request()->routeIs('admin.buses.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
@@ -59,25 +67,25 @@
                     <span class="ml-3">Pemesanan</span>
                 </a>
 
-                <a href="{{ route('admin.reports.index') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.reports.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.reports.index') : route('admin.reports.index') }}"
+                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.reports.*') || request()->routeIs('superadmin.reports.*')) ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
                     <i class="fas fa-chart-bar w-6"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
+
+                @if (auth()->user()->role === 'super_admin')
+                    <a href="{{ route('superadmin.settings.index') }}"
+                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.settings.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                        <i class="fas fa-cogs w-6"></i>
+                        <span class="ml-3">Pengaturan</span>
+                    </a>
+                @endif
 
                 <a href="{{ route('admin.profile.edit') }}"
                     class="flex items-center px-6 py-3 {{ request()->routeIs('admin.profile.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
                     <i class="fas fa-user-cog w-6"></i>
                     <span class="ml-3">Profil</span>
                 </a>
-
-                @if (auth()->user()->role === 'super_admin')
-                    <a href="{{ route('superadmin.dashboard') }}"
-                        class="flex items-center px-6 py-3 hover:bg-blue-700">
-                        <i class="fas fa-shield-alt w-6"></i>
-                        <span class="ml-3">Super Admin</span>
-                    </a>
-                @endif
             </nav>
 
             <div class="absolute bottom-0 w-64 p-6">

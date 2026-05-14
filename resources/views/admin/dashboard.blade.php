@@ -221,12 +221,14 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @if(auth()->user()->is_super_admin)
                 <a href="{{ route('admin.buses.create') }}"
                     class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-colors">
                     <i class="fas fa-plus-circle text-blue-600 text-3xl mb-3"></i>
                     <p class="text-sm font-medium text-gray-900">Tambah Bus Baru</p>
                     <p class="text-xs text-gray-500 mt-1">Tambah bus ke armada</p>
                 </a>
+                @endif
 
                 <a href="{{ route('admin.schedules.create') }}"
                     class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-green-300 rounded-lg hover:bg-green-50 hover:border-green-400 transition-colors">

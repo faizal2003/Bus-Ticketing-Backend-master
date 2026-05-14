@@ -34,7 +34,7 @@
                         <label for="bus_number" class="block text-sm font-medium text-gray-700">
                             Nomor Bus <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="bus_number" id="bus_number" value="{{ old('bus_number') }}"
+                        <input type="number" name="bus_number" id="bus_number" value="{{ old('bus_number') }}"
                             class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('bus_number') border-red-500 @enderror"
                             required>
                         @error('bus_number')

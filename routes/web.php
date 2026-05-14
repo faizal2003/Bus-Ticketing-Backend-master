@@ -78,9 +78,18 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
         });
 
         // Bus Management
-        Route::resource('buses', AdminBusController::class)->except(['show']);
+        Route::get('buses', [AdminBusController::class, 'index'])->name('buses.index');
+
+        Route::middleware(['check.role:super_admin'])->group(function () {
+            Route::get('buses/create', [AdminBusController::class, 'create'])->name('buses.create');
+            Route::post('buses', [AdminBusController::class, 'store'])->name('buses.store');
+            Route::get('buses/{bus}/edit', [AdminBusController::class, 'edit'])->name('buses.edit');
+            Route::patch('buses/{bus}', [AdminBusController::class, 'update'])->name('buses.update');
+            Route::delete('buses/{bus}', [AdminBusController::class, 'destroy'])->name('buses.destroy');
+            Route::post('buses/{bus}/toggle-status', [AdminBusController::class, 'toggleStatus'])->name('buses.toggle-status');
+        });
+
         Route::get('buses/{bus}', [AdminBusController::class, 'show'])->name('buses.show');
-        Route::post('buses/{bus}/toggle-status', [AdminBusController::class, 'toggleStatus'])->name('buses.toggle-status');
 
         // Schedule Management
         Route::resource('schedules', AdminScheduleController::class);

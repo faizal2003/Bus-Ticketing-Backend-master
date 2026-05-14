@@ -68,10 +68,15 @@ class BusController extends Controller
      */
     public function store(Request $request)
     {
+        // Normalisasi input
+        $request->merge([
+            'plate_number' => strtoupper($request->plate_number),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'bus_name'       => 'required|string|max:255',
-            'bus_number'     => 'required|string|max:255|unique:buses,bus_number',   // ← tambahkan
-            'plate_number'   => 'required|string|max:20|unique:buses,plate_number',
+            'bus_number'     => 'required|integer|min:1|unique:buses,bus_number',   // ← tambahkan
+            'plate_number'   => ['required', 'string', 'max:20', 'unique:buses,plate_number', 'regex:/^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{0,3}$/'],
             'total_seats'    => 'required|integer|min:1|max:100',
             'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
             'facilities'     => 'nullable|array',   // ← ubah jadi array
@@ -82,6 +87,7 @@ class BusController extends Controller
             'bus_number.unique'    => 'Nomor bus sudah terdaftar',
             'plate_number.required'=> 'Plat nomor wajib diisi',
             'plate_number.unique'  => 'Plat nomor sudah terdaftar',
+            'plate_number.regex'   => 'Format plat nomor tidak valid (Contoh: B 1234 ABC)',
             'total_seats.required' => 'Kapasitas wajib diisi',
             'total_seats.min'      => 'Kapasitas minimal 1 kursi',
             'bus_type.required'    => 'Tipe bus wajib dipilih',
@@ -173,14 +179,21 @@ class BusController extends Controller
         try {
             $bus = Bus::findOrFail($id);
 
+            // Normalisasi input
+            $request->merge([
+                'plate_number' => strtoupper($request->plate_number),
+            ]);
+
             $validator = Validator::make($request->all(), [
                 'bus_name'       => 'required|string|max:255',
-                'bus_number'     => ['required', 'string', 'max:255', Rule::unique('buses')->ignore($bus->id)],
-                'plate_number'   => ['required', 'string', 'max:20', Rule::unique('buses')->ignore($bus->id)],
+                'bus_number'     => ['required', 'integer', 'min:1', Rule::unique('buses')->ignore($bus->id)],
+                'plate_number'   => ['required', 'string', 'max:20', Rule::unique('buses')->ignore($bus->id), 'regex:/^[A-Z]{1,2}\s\d{1,4}\s[A-Z]{0,3}$/'],
                 'total_seats'    => 'required|integer|min:1|max:100',
                 'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
                 'facilities'     => 'nullable|array',
                 'status'         => 'required|in:active,inactive,maintenance',
+            ], [
+                'plate_number.regex' => 'Format plat nomor tidak valid (Contoh: B 1234 ABC)',
             ]);
 
             if ($validator->fails()) {

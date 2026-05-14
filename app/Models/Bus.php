@@ -20,6 +20,7 @@ class Bus extends Model
     ];
 
     protected $casts = [
+        'bus_number' => 'integer',
         'facilities' => 'array',
         'total_seats' => 'integer',
         'created_at' => 'datetime',
