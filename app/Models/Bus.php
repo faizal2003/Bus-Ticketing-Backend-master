@@ -17,6 +17,7 @@ class Bus extends Model
         'total_seats',
         'facilities',
         'status',
+        'image',
     ];
 
     protected $casts = [
@@ -89,6 +90,14 @@ class Bus extends Model
     public function getHasAvailableSeatsAttribute()
     {
         return $this->available_seats_count > 0;
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return asset('storage/buses/' . $this->image);
+        }
+        return null;
     }
 
     public function getBusTypeNameAttribute()

@@ -7,6 +7,7 @@ use App\Models\Bus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class BusController extends Controller
 {
@@ -81,6 +82,7 @@ class BusController extends Controller
             'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
             'facilities'     => 'nullable|array',   // ← ubah jadi array
             'status'         => 'required|in:active,inactive,maintenance',
+            'image'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ], [
             'bus_name.required'    => 'Nama bus wajib diisi',
             'bus_number.required'  => 'Nomor bus wajib diisi',
@@ -108,6 +110,12 @@ class BusController extends Controller
             $facilities = $request->facilities ?? [];
             $facilities = array_filter($facilities); // hapus nilai kosong
 
+            $imageName = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('buses', 'public');
+                $imageName = basename($imagePath);
+            }
+
             Bus::create([
                 'bus_name'     => $request->bus_name,
                 'bus_number'   => $request->bus_number,   // ← simpan bus_number
@@ -116,6 +124,7 @@ class BusController extends Controller
                 'bus_type'     => $busType,
                 'facilities'   => $facilities,
                 'status'       => $request->status,
+                'image'        => $imageName,
             ]);
 
             return redirect()->route('admin.buses.index')
@@ -192,6 +201,7 @@ class BusController extends Controller
                 'bus_type'       => 'required|string|in:Regular,Executive,VIP,Super,reguler,premium,vip,ekonomi,bisnis,executive',
                 'facilities'     => 'nullable|array',
                 'status'         => 'required|in:active,inactive,maintenance',
+                'image'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
             ], [
                 'plate_number.regex' => 'Format plat nomor tidak valid (Contoh: B 1234 ABC)',
             ]);
@@ -204,6 +214,15 @@ class BusController extends Controller
             $facilities = $request->facilities ?? [];
             $facilities = array_filter($facilities);
 
+            $imageName = $bus->image;
+            if ($request->hasFile('image')) {
+                if ($bus->image) {
+                    Storage::disk('public')->delete('buses/' . $bus->image);
+                }
+                $imagePath = $request->file('image')->store('buses', 'public');
+                $imageName = basename($imagePath);
+            }
+
             $bus->update([
                 'bus_name'     => $request->bus_name,
                 'bus_number'   => $request->bus_number,
@@ -212,6 +231,7 @@ class BusController extends Controller
                 'bus_type'     => $busType,
                 'facilities'   => $facilities,
                 'status'       => $request->status,
+                'image'        => $imageName,
             ]);
 
             return redirect()->route('admin.buses.index')
@@ -235,6 +255,10 @@ class BusController extends Controller
             if ($bus->schedules()->exists()) {
                 return redirect()->route('admin.buses.index')
                     ->with('error', 'Tidak dapat menghapus bus yang memiliki jadwal. Hapus jadwal terlebih dahulu.');
+            }
+
+            if ($bus->image) {
+                Storage::disk('public')->delete('buses/' . $bus->image);
             }
 
             $bus->delete();

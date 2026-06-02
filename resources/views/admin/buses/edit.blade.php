@@ -12,7 +12,7 @@
                 </p>
             </div>
 
-            <form action="{{ route('admin.buses.update', $bus) }}" method="POST" class="p-6">
+            <form action="{{ route('admin.buses.update', $bus) }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
                 @method('PUT')
 
@@ -114,6 +114,24 @@
                         @error('status')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    <!-- Image -->
+                    <div>
+                        <label for="image" class="block text-sm font-medium text-gray-700">
+                            Foto Bus (Biarkan kosong jika tidak ingin mengubah)
+                        </label>
+                        <input type="file" name="image" id="image" accept="image/*"
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('image') border-red-500 @enderror">
+                        @error('image')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @if($bus->image)
+                            <div class="mt-2">
+                                <span class="text-sm text-gray-500">Foto Saat Ini:</span>
+                                <img src="{{ $bus->image_url }}" alt="Bus Image" class="mt-1 h-20 w-auto rounded">
+                            </div>
+                        @endif
                     </div>
                 </div>
 

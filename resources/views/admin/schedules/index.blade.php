@@ -126,11 +126,11 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">
-                                        <i class="fas fa-plane-departure text-gray-400 mr-1"></i>
+                                        <i class="fas fa-location-arrow text-gray-400 mr-1"></i>
                                         {{ \Carbon\Carbon::parse($schedule->departure_time)->format('d M Y, H:i') }}
                                     </div>
                                     <div class="text-sm text-gray-500">
-                                        <i class="fas fa-plane-arrival text-gray-400 mr-1"></i>
+                                        <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i>
                                         {{ \Carbon\Carbon::parse($schedule->arrival_time)->format('d M Y, H:i') }}
                                     </div>
                                 </td>

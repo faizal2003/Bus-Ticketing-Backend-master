@@ -83,6 +83,7 @@ class BusController extends Controller
                             'type' => $schedule->bus->bus_type ?? 'Regular',
                             'total_seats' => $schedule->bus->total_seats ?? 40,
                             'facilities' => $schedule->bus->facilities ?? [],
+                            'image' => $schedule->bus->image_url,
                         ],
                         'route' => [
                             'origin' => $schedule->departure_city,
@@ -136,6 +137,7 @@ class BusController extends Controller
                         'type' => $bus->bus_type,
                         'total_seats' => $bus->total_seats,
                         'facilities' => $bus->facilities ?? [],
+                        'image' => $bus->image_url,
                         'driver_name' => $bus->driver_name,
                         'driver_phone' => $bus->driver_phone,
                         'plate_number' => $bus->plate_number,

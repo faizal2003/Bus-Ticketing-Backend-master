@@ -205,10 +205,30 @@ class Booking extends Model
 
     public function generateTicket()
     {
+        if (!$this->ticket) {
+            $ticketCode = 'TKT-' . date('Ymd') . '-' . strtoupper(uniqid());
+
+            $qrData = json_encode([
+                'booking_code' => $this->booking_code,
+                'ticket_code' => $ticketCode,
+                'schedule_id' => $this->schedule_id,
+                'timestamp' => now()->timestamp
+            ]);
+
+            $this->ticket()->create([
+                'ticket_code' => $ticketCode,
+                'qr_code' => $qrData,
+                'status' => 'active',
+                'boarding_status' => 'pending'
+            ]);
+        }
+
         if (!$this->ticket_code) {
-            $this->ticket_code = 'TICKET-' . strtoupper(uniqid());
-            $this->ticket_status = 'active';
-            $this->save();
+            $this->update([
+                'ticket_code' => $ticketCode ?? $this->ticket->ticket_code,
+                'ticket_status' => 'active',
+                'boarding_status' => 'pending'
+            ]);
         }
 
         return $this;

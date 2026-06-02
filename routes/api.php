@@ -17,6 +17,9 @@ Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
 
 Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 
+// 💳 Payment Webhook (Public)
+Route::post('/payments/callback', [PaymentController::class, 'callback']);
+
 // 🔐 Protected Routes - Semua route di bawah ini memerlukan authentication
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -60,7 +63,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // 💳 Payment Routes
     Route::prefix('payments')->group(function () {
         Route::post('/initiate', [PaymentController::class, 'initiate']);
-        Route::post('/callback', [PaymentController::class, 'callback']);
         Route::get('/{payment}/status', [PaymentController::class, 'status']);
         Route::post('/{payment}/verify', [PaymentController::class, 'verify']);
     });

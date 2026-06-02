@@ -5,10 +5,20 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    private function setupMidtrans()
+    {
+        \Midtrans\Config::$serverKey = Setting::get('midtrans_server_key', env('MIDTRANS_SERVER_KEY'));
+        \Midtrans\Config::$isProduction = Setting::get('midtrans_environment', env('MIDTRANS_ENVIRONMENT', 'sandbox')) === 'production';
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+    }
+
     /**
      * Initiate payment
      */
@@ -17,8 +27,8 @@ class PaymentController extends Controller
         try {
             $request->validate([
                 'booking_id' => 'required|exists:bookings,id',
-                'payment_method' => 'required|in:cash,transfer,qris',
-                'amount' => 'required|numeric|min:0',
+                'payment_method' => 'required|in:bank_transfer,cash,qris',
+                'bank' => 'required_if:payment_method,bank_transfer|in:bca,bni,bri,mandiri,permata,cimb',
             ]);
 
             $user = $request->user();
@@ -40,31 +50,49 @@ class PaymentController extends Controller
                 ], 400);
             }
 
-            // Check if amount matches
-            if ($request->amount < $booking->total_price) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Amount is less than required'
-                ], 400);
+            $amount = $booking->total_price;
+            $transaction_id = 'TRX-' . $booking->id . '-' . time();
+
+            // Setup Midtrans
+            $this->setupMidtrans();
+            
+            $midtransResponse = null;
+
+            if ($request->payment_method === 'bank_transfer') {
+                $params = [
+                    'payment_type' => 'bank_transfer',
+                    'transaction_details' => [
+                        'order_id' => $transaction_id,
+                        'gross_amount' => (int) $amount,
+                    ],
+                    'bank_transfer' => [
+                        'bank' => $request->bank
+                    ],
+                    'customer_details' => [
+                        'first_name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone_number ?? ''
+                    ]
+                ];
+
+                try {
+                    $midtransResponse = \Midtrans\CoreApi::charge($params);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to connect to payment gateway: ' . $e->getMessage()
+                    ], 500);
+                }
             }
 
             // Create payment
             $payment = Payment::create([
                 'booking_id' => $booking->id,
-                'user_id' => $user->id,
-                'payment_code' => 'PAY' . strtoupper(uniqid()),
-                'amount' => $request->amount,
                 'payment_method' => $request->payment_method,
+                'transaction_id' => $transaction_id,
+                'amount' => $amount,
                 'status' => 'pending',
-                'payment_date' => now(),
-            ]);
-
-            // For demo purposes, we'll auto-confirm payment
-            // In real scenario, you'd integrate with payment gateway
-            $payment->update(['status' => 'paid']);
-            $booking->update([
-                'payment_status' => 'paid',
-                'booking_status' => 'confirmed',
+                'midtrans_response' => $midtransResponse ? (array) $midtransResponse : null,
                 'payment_date' => now(),
             ]);
 
@@ -73,11 +101,11 @@ class PaymentController extends Controller
                 'message' => 'Payment initiated successfully',
                 'data' => [
                     'payment_id' => $payment->id,
-                    'payment_code' => $payment->payment_code,
+                    'transaction_id' => $payment->transaction_id,
                     'amount' => (float) $payment->amount,
                     'payment_method' => $payment->payment_method,
                     'status' => $payment->status,
-                    'booking_status' => $booking->booking_status,
+                    'midtrans' => $midtransResponse,
                 ]
             ]);
 
@@ -96,14 +124,60 @@ class PaymentController extends Controller
     public function callback(Request $request)
     {
         try {
-            // This would handle callback from payment gateway
-            // For now, we'll just return success
+            $this->setupMidtrans();
+            $notification = new \Midtrans\Notification();
+
+            $transaction = $notification->transaction_status;
+            $type = $notification->payment_type;
+            $order_id = $notification->order_id;
+            $fraud = $notification->fraud_status;
+
+            $payment = Payment::where('transaction_id', $order_id)->first();
+            if (!$payment) {
+                return response()->json(['status' => 'error', 'message' => 'Payment not found'], 404);
+            }
+
+            if ($transaction == 'capture') {
+                if ($type == 'credit_card') {
+                    if ($fraud == 'challenge') {
+                        $payment->update(['status' => 'pending']);
+                    } else {
+                        $payment->update(['status' => 'success', 'payment_date' => now()]);
+                    }
+                }
+            } else if ($transaction == 'settlement') {
+                $payment->update(['status' => 'success', 'payment_date' => now()]);
+            } else if ($transaction == 'pending') {
+                $payment->update(['status' => 'pending']);
+            } else if ($transaction == 'deny') {
+                $payment->update(['status' => 'failed']);
+            } else if ($transaction == 'expire') {
+                $payment->update(['status' => 'expired']);
+            } else if ($transaction == 'cancel') {
+                $payment->update(['status' => 'failed']);
+            }
+
+            // Update Booking status
+            if ($payment->status === 'success') {
+                $payment->booking->update([
+                    'payment_status' => 'paid',
+                    'booking_status' => 'confirmed'
+                ]);
+                $payment->booking->generateTicket();
+            } else if (in_array($payment->status, ['failed', 'expired'])) {
+                $payment->booking->update([
+                    'payment_status' => 'failed',
+                    'booking_status' => 'cancelled'
+                ]);
+            }
+
             return response()->json([
                 'status' => 'success',
-                'message' => 'Payment callback received'
+                'message' => 'Payment callback processed'
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Midtrans Callback Error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to process callback',
@@ -128,7 +202,7 @@ class PaymentController extends Controller
             }
 
             $user = $request->user();
-            if ($payment->user_id !== $user->id) {
+            if ($payment->booking->user_id !== $user->id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Unauthorized to view this payment'
@@ -140,11 +214,12 @@ class PaymentController extends Controller
                 'message' => 'Payment status retrieved',
                 'data' => [
                     'payment_id' => $payment->id,
-                    'payment_code' => $payment->payment_code,
+                    'transaction_id' => $payment->transaction_id,
                     'amount' => (float) $payment->amount,
                     'payment_method' => $payment->payment_method,
                     'status' => $payment->status,
                     'payment_date' => $payment->payment_date?->format('Y-m-d H:i:s'),
+                    'midtrans' => $payment->midtrans_response,
                     'booking' => [
                         'id' => $payment->booking->id,
                         'booking_code' => $payment->booking->booking_code,
@@ -179,16 +254,34 @@ class PaymentController extends Controller
             }
 
             $user = $request->user();
-            if ($payment->user_id !== $user->id && $user->role !== 'admin') {
+            if ($payment->booking->user_id !== $user->id && $user->role !== 'admin' && $user->role !== 'super_admin') {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Unauthorized'
                 ], 403);
             }
 
-            // Simulate verification
-            $payment->update(['status' => 'verified']);
-            $payment->booking->update(['payment_status' => 'verified']);
+            // Sync with Midtrans
+            $this->setupMidtrans();
+            
+            try {
+                $status = \Midtrans\Transaction::status($payment->transaction_id);
+                $transactionStatus = $status->transaction_status ?? 'pending';
+
+                if ($transactionStatus == 'settlement' || $transactionStatus == 'capture') {
+                    $payment->update(['status' => 'success']);
+                    $payment->booking->update(['payment_status' => 'paid', 'booking_status' => 'confirmed']);
+                    $payment->booking->generateTicket();
+                } else if ($transactionStatus == 'expire') {
+                    $payment->update(['status' => 'expired']);
+                    $payment->booking->update(['payment_status' => 'expired', 'booking_status' => 'cancelled']);
+                } else if ($transactionStatus == 'cancel' || $transactionStatus == 'deny') {
+                    $payment->update(['status' => 'failed']);
+                    $payment->booking->update(['payment_status' => 'failed', 'booking_status' => 'cancelled']);
+                }
+            } catch (\Exception $e) {
+                // If Midtrans cannot find the transaction, we just fall back
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -196,7 +289,6 @@ class PaymentController extends Controller
                 'data' => [
                     'payment_id' => $payment->id,
                     'status' => $payment->status,
-                    'verified_at' => now()->format('Y-m-d H:i:s'),
                 ]
             ]);
 
