@@ -27,7 +27,7 @@ class PaymentController extends Controller
         try {
             $request->validate([
                 'booking_id' => 'required|exists:bookings,id',
-                'payment_method' => 'required|in:bank_transfer,cash,qris',
+                'payment_method' => 'required|in:bank_transfer,cash,qris,e_wallet',
                 'bank' => 'required_if:payment_method,bank_transfer|in:bca,bni,bri,mandiri,permata,cimb',
             ]);
 
@@ -83,6 +83,28 @@ class PaymentController extends Controller
                         'message' => 'Failed to connect to payment gateway: ' . $e->getMessage()
                     ], 500);
                 }
+            } else if ($request->payment_method === 'e_wallet') {
+                $params = [
+                    'payment_type' => 'gopay',
+                    'transaction_details' => [
+                        'order_id' => $transaction_id,
+                        'gross_amount' => (int) $amount,
+                    ],
+                    'customer_details' => [
+                        'first_name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone_number ?? ''
+                    ]
+                ];
+
+                try {
+                    $midtransResponse = \Midtrans\CoreApi::charge($params);
+                } catch (\Exception $e) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to connect to payment gateway: ' . $e->getMessage()
+                    ], 500);
+                }
             }
 
             // Create payment
@@ -95,6 +117,12 @@ class PaymentController extends Controller
                 'midtrans_response' => $midtransResponse ? (array) $midtransResponse : null,
                 'payment_date' => now(),
             ]);
+
+            // For cash payment, immediately confirm the booking
+            if ($request->payment_method === 'cash') {
+                $booking->update(['booking_status' => 'confirmed']);
+                // The payment status stays pending until paid to conductor
+            }
 
             return response()->json([
                 'status' => 'success',

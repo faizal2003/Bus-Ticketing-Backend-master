@@ -310,7 +310,7 @@ class BookingController extends Controller
         try {
             $booking = Booking::with(['schedule', 'passengers'])
                 ->where('user_id', $request->user()->id)
-                ->where('booking_status', 'pending')
+                ->whereIn('booking_status', ['pending', 'confirmed'])
                 ->find($id);
 
             if (!$booking) {
@@ -318,6 +318,17 @@ class BookingController extends Controller
                     'status' => 'error',
                     'message' => 'Booking not found or cannot be cancelled'
                 ], 404);
+            }
+
+            // Create refund request if paid
+            if ($booking->payment_status === 'success' || $booking->booking_status === 'confirmed') {
+                \App\Models\Refund::create([
+                    'booking_id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'amount' => $booking->total_price,
+                    'reason' => $request->reason ?? 'Cancelled by passenger',
+                    'status' => 'pending',
+                ]);
             }
 
             // Update booking status

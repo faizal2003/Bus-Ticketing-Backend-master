@@ -14,12 +14,14 @@ use App\Http\Controllers\Admin\ScheduleController as AdminScheduleController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 
 // Super Admin
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
 use App\Http\Controllers\SuperAdmin\ReportController as SuperAdminReportController;
+use App\Http\Controllers\SuperAdmin\RouteController as SuperAdminRouteController;
 
 // Conductor
 use App\Http\Controllers\Conductor\DashboardController as ConductorDashboardController;
@@ -95,6 +97,10 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
         Route::resource('schedules', AdminScheduleController::class);
         Route::post('schedules/{schedule}/toggle-status', [AdminScheduleController::class, 'toggleStatus'])->name('schedules.toggle-status');
 
+        // Refund Management
+        Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
+        Route::put('refunds/{refund}', [AdminRefundController::class, 'update'])->name('refunds.update');
+
         // Booking Management
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', [AdminBookingController::class, 'index'])->name('index');
@@ -132,6 +138,9 @@ Route::middleware(['auth', 'check.role:super_admin'])
         // User Management
         Route::resource('users', SuperAdminUserController::class);
         Route::patch('/users/{user}/toggle-status', [SuperAdminUserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+        // Route Management
+        Route::resource('routes', SuperAdminRouteController::class);
 
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {

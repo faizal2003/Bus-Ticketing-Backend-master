@@ -109,50 +109,6 @@
                     </div>
                 </div>
 
-                <!-- Bagian QR Code -->
-                <div class="border-b border-gray-200 pb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan QR Code</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Ukuran QR (px)</label>
-                            <input type="number" name="qr_size"
-                                value="{{ old('qr_size', $settingValues['qr_size'] ?? 300) }}" min="100"
-                                max="800" class="mt-1 w-full border rounded-lg px-3 py-2">
-                            @error('qr_size')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Margin (px)</label>
-                            <input type="number" name="qr_margin"
-                                value="{{ old('qr_margin', $settingValues['qr_margin'] ?? 10) }}" min="0"
-                                max="50" class="mt-1 w-full border rounded-lg px-3 py-2">
-                            @error('qr_margin')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Error Correction</label>
-                            <select name="qr_error_correction" class="mt-1 w-full border rounded-lg px-3 py-2">
-                                <option value="L"
-                                    {{ ($settingValues['qr_error_correction'] ?? 'M') == 'L' ? 'selected' : '' }}>L - 7%
-                                </option>
-                                <option value="M"
-                                    {{ ($settingValues['qr_error_correction'] ?? 'M') == 'M' ? 'selected' : '' }}>M - 15%
-                                </option>
-                                <option value="Q"
-                                    {{ ($settingValues['qr_error_correction'] ?? 'M') == 'Q' ? 'selected' : '' }}>Q - 25%
-                                </option>
-                                <option value="H"
-                                    {{ ($settingValues['qr_error_correction'] ?? 'M') == 'H' ? 'selected' : '' }}>H - 30%
-                                </option>
-                            </select>
-                            @error('qr_error_correction')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Bagian Format Tiket -->
                 <div class="pb-6">

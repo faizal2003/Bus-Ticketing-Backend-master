@@ -185,19 +185,19 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('superadmin.users.edit', $user) }}"
-                                            class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-edit"></i>
+                                            class="text-blue-600 hover:text-blue-900" title="Edit">
+                                            <i class="fas fa-edit text-lg"></i>
                                         </a>
 
                                         <form action="{{ route('superadmin.users.toggle-status', $user) }}" method="POST"
                                             class="inline">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" class="text-yellow-600 hover:text-yellow-900">
+                                            <button type="submit" class="{{ $user->is_active ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' }}" title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
                                                 @if ($user->is_active)
-                                                    <i class="fas fa-user-slash" title="Nonaktifkan"></i>
+                                                    <i class="fas fa-user-slash text-lg"></i>
                                                 @else
-                                                    <i class="fas fa-user-check" title="Aktifkan"></i>
+                                                    <i class="fas fa-user-check text-lg"></i>
                                                 @endif
                                             </button>
                                         </form>
@@ -207,8 +207,8 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900"
-                                                onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
-                                                <i class="fas fa-trash"></i>
+                                                onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')" title="Hapus">
+                                                <i class="fas fa-trash text-lg"></i>
                                             </button>
                                         </form>
                                     </div>

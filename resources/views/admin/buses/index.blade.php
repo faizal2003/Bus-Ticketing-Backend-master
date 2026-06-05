@@ -233,15 +233,15 @@
                                     <div class="flex items-center space-x-3">
                                         <!-- Detail Button -->
                                         <a href="{{ route('admin.buses.show', $bus->id) }}"
-                                            class="text-blue-600 hover:text-blue-900" title="Detail">
-                                            <i class="fas fa-eye"></i>
+                                            class="text-purple-600 hover:text-purple-900" title="Detail">
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
 
                                         @if(auth()->user()->is_super_admin)
                                         <!-- Edit Button -->
                                         <a href="{{ route('admin.buses.edit', $bus->id) }}"
-                                            class="text-green-600 hover:text-green-900" title="Edit">
-                                            <i class="fas fa-edit"></i>
+                                            class="text-blue-600 hover:text-blue-900" title="Edit">
+                                            <i class="fas fa-edit text-lg"></i>
                                         </a>
 
                                         <!-- Toggle Status Button -->
@@ -249,10 +249,10 @@
                                             class="inline"
                                             onsubmit="return confirm('Apakah Anda yakin ingin {{ $busStatus == 'active' ? 'menonaktifkan' : 'mengaktifkan' }} bus ini?')">
                                             @csrf
-                                            <!-- HAPUS baris @method('PATCH') -->
-                                            <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="{{ $busStatus == 'active' ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                                <i
-                                                    class="fas fa-{{ $busStatus == 'active' ? 'ban' : 'check-circle' }}"></i>
+                                            <button type="submit"
+                                                class="{{ $busStatus == 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' }}"
+                                                title="{{ $busStatus == 'active' ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                                <i class="fas {{ $busStatus == 'active' ? 'fa-ban' : 'fa-check-circle' }} text-lg"></i>
                                             </button>
                                         </form>
 
@@ -264,7 +264,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900"
                                                 title="Hapus">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas fa-trash text-lg"></i>
                                             </button>
                                         </form>
                                         @endif

@@ -37,31 +37,45 @@
                         @enderror
                     </div>
 
-                    <!-- Departure City -->
-                    <div>
-                        <label for="departure_city" class="block text-sm font-medium text-gray-700">
-                            Kota Keberangkatan <span class="text-red-500">*</span>
+                    <!-- Route Selection -->
+                    <div class="md:col-span-2">
+                        <label for="route_selector" class="block text-sm font-medium text-gray-700">
+                            Pilih Rute <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="departure_city" id="departure_city" value="{{ old('departure_city') }}"
-                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('departure_city') border-red-500 @enderror"
-                            required>
+                        <select id="route_selector"
+                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            required onchange="updateRouteCities()">
+                            <option value="">-- Pilih Rute --</option>
+                            @foreach ($routes ?? [] as $route)
+                                <option value="{{ $route->id }}" data-origin="{{ $route->origin_city }}" data-destination="{{ $route->destination_city }}"
+                                    {{ (old('departure_city') == $route->origin_city && old('arrival_city') == $route->destination_city) ? 'selected' : '' }}>
+                                    {{ $route->origin_city }} → {{ $route->destination_city }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <input type="hidden" name="departure_city" id="departure_city" value="{{ old('departure_city') }}">
+                        <input type="hidden" name="arrival_city" id="arrival_city" value="{{ old('arrival_city') }}">
                         @error('departure_city')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                    </div>
-
-                    <!-- Arrival City -->
-                    <div>
-                        <label for="arrival_city" class="block text-sm font-medium text-gray-700">
-                            Kota Tujuan <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="arrival_city" id="arrival_city" value="{{ old('arrival_city') }}"
-                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('arrival_city') border-red-500 @enderror"
-                            required>
                         @error('arrival_city')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    <script>
+                        function updateRouteCities() {
+                            var selector = document.getElementById('route_selector');
+                            var selectedOption = selector.options[selector.selectedIndex];
+                            if (selectedOption.value) {
+                                document.getElementById('departure_city').value = selectedOption.getAttribute('data-origin');
+                                document.getElementById('arrival_city').value = selectedOption.getAttribute('data-destination');
+                            } else {
+                                document.getElementById('departure_city').value = '';
+                                document.getElementById('arrival_city').value = '';
+                            }
+                        }
+                    </script>
 
                     <!-- Departure Time -->
                     <div>

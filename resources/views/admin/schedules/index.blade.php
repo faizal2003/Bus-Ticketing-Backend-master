@@ -27,25 +27,25 @@
                 <div>
                     <label for="departure_city" class="block text-sm font-medium text-gray-700">Kota Keberangkatan</label>
                     <input type="text" name="departure_city" id="departure_city" value="{{ request('departure_city') }}"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
                         placeholder="Kota asal...">
                 </div>
                 <div>
                     <label for="arrival_city" class="block text-sm font-medium text-gray-700">Kota Tujuan</label>
                     <input type="text" name="arrival_city" id="arrival_city" value="{{ request('arrival_city') }}"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
                         placeholder="Kota tujuan...">
                 </div>
                 <div>
                     <label for="departure_date" class="block text-sm font-medium text-gray-700">Tanggal
                         Keberangkatan</label>
                     <input type="date" name="departure_date" id="departure_date" value="{{ request('departure_date') }}"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                 </div>
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                     <select name="status" id="status"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <option value="">Semua Status</option>
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Aktif</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
@@ -55,13 +55,13 @@
                 </div>
                 <div class="flex items-end">
                     <button type="submit"
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                         <i class="fas fa-filter mr-2"></i>
                         Filter
                     </button>
                     @if (request()->hasAny(['departure_city', 'arrival_city', 'departure_date', 'status']))
                         <a href="{{ route('admin.schedules.index') }}"
-                            class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                             Reset
                         </a>
                     @endif
@@ -111,8 +111,8 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center">
                                         <div
-                                            class="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-route text-blue-600"></i>
+                                            class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-route text-purple-600"></i>
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
@@ -187,12 +187,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('admin.schedules.show', $schedule) }}"
-                                            class="text-blue-600 hover:text-blue-900" title="Detail">
-                                            <i class="fas fa-eye"></i>
+                                            class="text-purple-600 hover:text-purple-900" title="Detail">
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                         <a href="{{ route('admin.schedules.edit', $schedule) }}"
-                                            class="text-green-600 hover:text-green-900" title="Edit">
-                                            <i class="fas fa-edit"></i>
+                                            class="text-blue-600 hover:text-blue-900" title="Edit">
+                                            <i class="fas fa-edit text-lg"></i>
                                         </a>
                                         @if (!$isPast && $schedule->status != 'cancelled')
                                             <form action="{{ route('admin.schedules.destroy', $schedule) }}"
@@ -200,9 +200,9 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    onclick="return confirm('Apakah Anda yakin ingin membatalkan jadwal ini?')"
+                                                    onclick="return confirm('Batalkan jadwal ini?')"
                                                     class="text-red-600 hover:text-red-900" title="Batalkan">
-                                                    <i class="fas fa-ban"></i>
+                                                    <i class="fas fa-trash text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif

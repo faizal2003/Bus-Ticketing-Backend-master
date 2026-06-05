@@ -14,7 +14,7 @@
             </div>
             <div class="mt-4 sm:mt-0">
                 <button type="button" onclick="printReport()"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                     <i class="fas fa-print mr-2"></i>
                     Cetak Laporan
                 </button>
@@ -31,7 +31,7 @@
                         </label>
                         <input type="date" name="start_date" id="start_date"
                             value="{{ request('start_date', date('Y-m-01')) }}"
-                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                     </div>
                     <div>
                         <label for="end_date" class="block text-sm font-medium text-gray-700">
@@ -39,11 +39,11 @@
                         </label>
                         <input type="date" name="end_date" id="end_date"
                             value="{{ request('end_date', date('Y-m-d')) }}"
-                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                     </div>
                     <div class="flex items-end">
                         <button type="submit"
-                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                             <i class="fas fa-filter mr-2"></i>
                             Filter Laporan
                         </button>
@@ -57,8 +57,8 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+                        <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-ticket-alt text-purple-600 text-xl"></i>
                         </div>
                     </div>
                     <div class="ml-4">
@@ -250,8 +250,8 @@
                     @forelse($reportData['bus_performance'] ?? [] as $bus)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div class="flex items-center">
-                                <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-bus text-blue-600"></i>
+                                <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-bus text-purple-600"></i>
                                 </div>
                                 <div>
                                     <div class="text-sm font-medium text-gray-900">{{ $bus['name'] }}</div>
@@ -281,7 +281,7 @@
                                 <span>{{ $method['count'] }} ({{ $method['percentage'] }}%)</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $method['percentage'] }}%">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: {{ $method['percentage'] }}%">
                                 </div>
                             </div>
                         </div>
@@ -308,7 +308,7 @@
                 </button>
                 <button type="button"
                     class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                    <i class="fas fa-file-csv text-blue-600 mr-2"></i>
+                    <i class="fas fa-file-csv text-purple-600 mr-2"></i>
                     Export ke CSV
                 </button>
             </div>

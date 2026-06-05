@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin - Bus Ticketing')</title>
+    <title>@yield('title', auth()->user()->role === 'super_admin' ? 'Super Admin - Bus Ticketing' : 'Admin - Bus Ticketing')</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,68 +21,80 @@
     <!-- Sidebar -->
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-b from-blue-900 to-blue-800 text-white">
+        <div class="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white">
             <div class="p-6">
                 <div class="flex items-center">
                     <div class="h-10 w-10 rounded-lg bg-white flex items-center justify-center">
-                        <i class="fas fa-bus text-blue-700 text-xl"></i>
+                        <i class="fas fa-bus text-purple-700 text-xl"></i>
                     </div>
                     <div class="ml-3">
                         <h1 class="text-xl font-bold">Bus Ticketing</h1>
-                        <p class="text-xs text-blue-300">Admin Panel</p>
+                        <p class="text-xs text-purple-300">{{ auth()->user()->role === 'super_admin' ? 'Super Admin Panel' : 'Admin Panel' }}</p>
                     </div>
                 </div>
             </div>
 
             <nav class="mt-6">
                 <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.dashboard') : route('admin.dashboard') }}"
-                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard')) ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard')) ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-tachometer-alt w-6"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
 
                 @if (auth()->user()->role === 'super_admin')
                     <a href="{{ route('superadmin.users.index') }}"
-                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.users.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.users.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                         <i class="fas fa-users w-6"></i>
                         <span class="ml-3">User Management</span>
                     </a>
                 @endif
 
                 <a href="{{ route('admin.buses.index') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.buses.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.buses.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-bus w-6"></i>
                     <span class="ml-3">Manajemen Bus</span>
                 </a>
 
                 <a href="{{ route('admin.schedules.index') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.schedules.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.schedules.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-calendar-alt w-6"></i>
                     <span class="ml-3">Jadwal Bus</span>
                 </a>
 
                 <a href="{{ route('admin.bookings.index') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.bookings.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.bookings.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-ticket-alt w-6"></i>
                     <span class="ml-3">Pemesanan</span>
                 </a>
 
+                <a href="{{ route('admin.refunds.index') }}"
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.refunds.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
+                    <i class="fas fa-undo-alt w-6"></i>
+                    <span class="ml-3">Refund</span>
+                </a>
+
                 <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.reports.index') : route('admin.reports.index') }}"
-                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.reports.*') || request()->routeIs('superadmin.reports.*')) ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.reports.*') || request()->routeIs('superadmin.reports.*')) ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-chart-bar w-6"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
 
                 @if (auth()->user()->role === 'super_admin')
+                    <a href="{{ route('superadmin.routes.index') }}"
+                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.routes.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
+                        <i class="fas fa-route w-6"></i>
+                        <span class="ml-3">Manajemen Rute</span>
+                    </a>
+
                     <a href="{{ route('superadmin.settings.index') }}"
-                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.settings.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                        class="flex items-center px-6 py-3 {{ request()->routeIs('superadmin.settings.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                         <i class="fas fa-cogs w-6"></i>
                         <span class="ml-3">Pengaturan</span>
                     </a>
                 @endif
 
                 <a href="{{ route('admin.profile.edit') }}"
-                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.profile.*') ? 'bg-blue-700 border-r-4 border-yellow-400' : 'hover:bg-blue-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.profile.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-user-cog w-6"></i>
                     <span class="ml-3">Profil</span>
                 </a>
@@ -130,21 +142,6 @@
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">@yield('title')</h2>
                         <p class="text-gray-600 text-sm">{{ now()->format('l, j F Y') }}</p>
-                    </div>
-
-                    <div class="flex items-center space-x-4">
-                        <div class="relative">
-                            <button class="text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-bell text-xl"></i>
-                                <span class="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-                            </button>
-                        </div>
-
-                        <div class="relative">
-                            <button class="text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-question-circle text-xl"></i>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </header>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Bus;
 use App\Models\BusSchedule;
+use App\Models\BusRoute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,8 @@ class ScheduleController extends Controller
     public function create()
     {
         $buses = Bus::where('status', 'active')->get();
-        return view('admin.schedules.create', compact('buses'));
+        $routes = BusRoute::where('status', 'active')->get();
+        return view('admin.schedules.create', compact('buses', 'routes'));
     }
 
     /**
@@ -110,8 +112,9 @@ class ScheduleController extends Controller
     {
         $schedule = BusSchedule::findOrFail($id);
         $buses = Bus::where('status', 'active')->get();
+        $routes = BusRoute::where('status', 'active')->get();
 
-        return view('admin.schedules.edit', compact('schedule', 'buses'));
+        return view('admin.schedules.edit', compact('schedule', 'buses', 'routes'));
     }
 
     /**

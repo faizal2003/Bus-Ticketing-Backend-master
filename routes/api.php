@@ -9,8 +9,10 @@ use App\Http\Controllers\Api\PassengerController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\RouteController;
 
 // 🔓 Public Routes
+Route::get('/routes', [RouteController::class, 'index']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/refresh-token', [AuthController::class, 'refreshToken']);

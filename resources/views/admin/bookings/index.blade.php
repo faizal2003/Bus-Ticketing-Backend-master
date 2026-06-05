@@ -14,7 +14,7 @@
             </div>
             <div class="mt-4 sm:mt-0">
                 <button type="button"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                     <i class="fas fa-download mr-2"></i>
                     Export Laporan
                 </button>
@@ -26,8 +26,8 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                            <i class="fas fa-ticket-alt text-blue-600 text-xl"></i>
+                        <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-ticket-alt text-purple-600 text-xl"></i>
                         </div>
                     </div>
                     <div class="ml-4">
@@ -87,13 +87,13 @@
                 <div>
                     <label for="booking_code" class="block text-sm font-medium text-gray-700">Kode Booking</label>
                     <input type="text" name="booking_code" id="booking_code" value="{{ request('booking_code') }}"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
                         placeholder="BK-123456...">
                 </div>
                 <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status Pemesanan</label>
                     <select name="status" id="status"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
                         <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Terkonfirmasi
@@ -105,7 +105,7 @@
                 <div>
                     <label for="payment_status" class="block text-sm font-medium text-gray-700">Status Pembayaran</label>
                     <select name="payment_status" id="payment_status"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <option value="">Semua Status</option>
                         <option value="pending" {{ request('payment_status') == 'pending' ? 'selected' : '' }}>Menunggu
                         </option>
@@ -115,13 +115,13 @@
                 </div>
                 <div class="flex items-end">
                     <button type="submit"
-                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                         <i class="fas fa-filter mr-2"></i>
                         Filter
                     </button>
                     @if (request()->hasAny(['booking_code', 'status', 'payment_status']))
                         <a href="{{ route('admin.bookings.index') }}"
-                            class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                             Reset
                         </a>
                     @endif
@@ -196,7 +196,7 @@
                                             <span
                                                 class="text-xs px-2 inline-flex leading-5 font-semibold rounded-full
                             {{ $booking->payment_status === 'paid'
-                                ? 'bg-blue-100 text-blue-800'
+                                ? 'bg-purple-100 text-purple-800'
                                 : ($booking->payment_status === 'pending'
                                     ? 'bg-yellow-100 text-yellow-800'
                                     : 'bg-red-100 text-red-800') }}">
@@ -208,8 +208,8 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('admin.bookings.show', $booking->id) }}"
-                                            class="text-blue-600 hover:text-blue-900" title="Detail">
-                                            <i class="fas fa-eye"></i>
+                                            class="text-purple-600 hover:text-purple-900" title="Detail">
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                         @if ($booking->booking_status == 'pending')
                                             <form action="{{ route('admin.bookings.confirm', $booking->id) }}"
@@ -219,7 +219,7 @@
                                                 <button type="submit"
                                                     onclick="return confirm('Konfirmasi pemesanan ini?')"
                                                     class="text-green-600 hover:text-green-900" title="Konfirmasi">
-                                                    <i class="fas fa-check"></i>
+                                                    <i class="fas fa-check text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -230,7 +230,7 @@
                                                 @method('POST')
                                                 <button type="submit" onclick="return confirm('Batalkan pemesanan ini?')"
                                                     class="text-red-600 hover:text-red-900" title="Batalkan">
-                                                    <i class="fas fa-ban"></i>
+                                                    <i class="fas fa-ban text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif
