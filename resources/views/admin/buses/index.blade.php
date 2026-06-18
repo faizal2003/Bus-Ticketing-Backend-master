@@ -12,14 +12,14 @@
                     Kelola data bus dan armada transportasi
                 </p>
             </div>
-            @if(auth()->user()->is_super_admin)
-            <div class="mt-4 sm:mt-0">
-                <a href="{{ route('admin.buses.create') }}"
-                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    Tambah Bus Baru
-                </a>
-            </div>
+            @if (auth()->user()->is_super_admin)
+                <div class="mt-4 sm:mt-0">
+                    <a href="{{ route('admin.buses.create') }}"
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Tambah Bus Baru
+                    </a>
+                </div>
             @endif
         </div>
 
@@ -200,36 +200,37 @@
                                             <i class="fas fa-eye text-lg"></i>
                                         </a>
 
-                                        @if(auth()->user()->is_super_admin)
-                                        <!-- Edit Button -->
-                                        <a href="{{ route('admin.buses.edit', $bus->id) }}"
-                                            class="text-blue-600 hover:text-blue-900" title="Edit">
-                                            <i class="fas fa-edit text-lg"></i>
-                                        </a>
+                                        @if (auth()->user()->is_super_admin)
+                                            <!-- Edit Button -->
+                                            <a href="{{ route('admin.buses.edit', $bus->id) }}"
+                                                class="text-blue-600 hover:text-blue-900" title="Edit">
+                                                <i class="fas fa-edit text-lg"></i>
+                                            </a>
 
-                                        <!-- Toggle Status Button -->
-                                        <form action="{{ route('admin.buses.toggle-status', $bus->id) }}" method="POST"
-                                            class="inline"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin {{ $busStatus == 'active' ? 'menonaktifkan' : 'mengaktifkan' }} bus ini?')">
-                                            @csrf
-                                            <button type="submit"
-                                                class="{{ $busStatus == 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' }}"
-                                                title="{{ $busStatus == 'active' ? 'Nonaktifkan' : 'Aktifkan' }}">
-                                                <i class="fas {{ $busStatus == 'active' ? 'fa-ban' : 'fa-check-circle' }} text-lg"></i>
-                                            </button>
-                                        </form>
+                                            <!-- Toggle Status Button -->
+                                            <form action="{{ route('admin.buses.toggle-status', $bus->id) }}"
+                                                method="POST" class="inline"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin {{ $busStatus == 'active' ? 'menonaktifkan' : 'mengaktifkan' }} bus ini?')">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="{{ $busStatus == 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' }}"
+                                                    title="{{ $busStatus == 'active' ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                                    <i
+                                                        class="fas {{ $busStatus == 'active' ? 'fa-ban' : 'fa-check-circle' }} text-lg"></i>
+                                                </button>
+                                            </form>
 
-                                        <!-- Delete Button -->
-                                        <form action="{{ route('admin.buses.destroy', $bus->id) }}" method="POST"
-                                            class="inline"
-                                            onsubmit="return confirm('Apakah Anda yakin ingin menghapus bus ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900"
-                                                title="Hapus">
-                                                <i class="fas fa-trash text-lg"></i>
-                                            </button>
-                                        </form>
+                                            <!-- Delete Button -->
+                                            <form action="{{ route('admin.buses.destroy', $bus->id) }}" method="POST"
+                                                class="inline"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus bus ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900"
+                                                    title="Hapus">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+                                            </form>
                                         @endif
                                     </div>
                                 </td>
@@ -241,20 +242,20 @@
                                         <i class="fas fa-bus text-gray-400 text-4xl mb-3"></i>
                                         <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada bus</h3>
                                         <p class="mt-1 text-sm text-gray-500">
-                                            @if(auth()->user()->is_super_admin)
-                                            Mulai dengan menambahkan bus baru ke sistem.
+                                            @if (auth()->user()->is_super_admin)
+                                                Mulai dengan menambahkan bus baru ke sistem.
                                             @else
-                                            Belum ada data bus yang tersedia.
+                                                Belum ada data bus yang tersedia.
                                             @endif
                                         </p>
-                                        @if(auth()->user()->is_super_admin)
-                                        <div class="mt-6">
-                                            <a href="{{ route('admin.buses.create') }}"
-                                                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                                <i class="fas fa-plus-circle mr-2"></i>
-                                                Tambah Bus Pertama
-                                            </a>
-                                        </div>
+                                        @if (auth()->user()->is_super_admin)
+                                            <div class="mt-6">
+                                                <a href="{{ route('admin.buses.create') }}"
+                                                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                                    <i class="fas fa-plus-circle mr-2"></i>
+                                                    Tambah Bus Pertama
+                                                </a>
+                                            </div>
                                         @endif
                                     </div>
                                 </td>

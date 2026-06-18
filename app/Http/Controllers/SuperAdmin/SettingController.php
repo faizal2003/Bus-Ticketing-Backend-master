@@ -74,22 +74,6 @@ class SettingController extends Controller
     }
 
     /**
-     * Clear application cache.
-     */
-    public function clearCache(Request $request)
-    {
-        try {
-            Artisan::call('cache:clear');
-            Artisan::call('view:clear');
-            Artisan::call('route:clear');
-            Artisan::call('config:clear');
-            return back()->with('success', 'Cache berhasil dibersihkan.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Run maintenance commands.
      */
     public function runMaintenance(Request $request)

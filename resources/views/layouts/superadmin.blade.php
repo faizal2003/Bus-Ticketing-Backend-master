@@ -29,14 +29,15 @@
                     </div>
                     <div class="ml-3">
                         <h1 class="text-xl font-bold">Bus Ticketing</h1>
-                        <p class="text-xs text-purple-300">{{ auth()->user()->role === 'super_admin' ? 'Super Admin Panel' : 'Admin Panel' }}</p>
+                        <p class="text-xs text-purple-300">
+                            {{ auth()->user()->role === 'super_admin' ? 'Super Admin Panel' : 'Admin Panel' }}</p>
                     </div>
                 </div>
             </div>
 
             <nav class="mt-6">
                 <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.dashboard') : route('admin.dashboard') }}"
-                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard')) ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-tachometer-alt w-6"></i>
                     <span class="ml-3">Dashboard</span>
                 </a>
@@ -74,7 +75,7 @@
                 </a>
 
                 <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.reports.index') : route('admin.reports.index') }}"
-                    class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.reports.*') || request()->routeIs('superadmin.reports.*')) ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
+                    class="flex items-center px-6 py-3 {{ request()->routeIs('admin.reports.*') || request()->routeIs('superadmin.reports.*') ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
                     <i class="fas fa-chart-bar w-6"></i>
                     <span class="ml-3">Laporan</span>
                 </a>
