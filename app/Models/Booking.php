@@ -205,6 +205,10 @@ class Booking extends Model
 
     public function generateTicket()
     {
+        // Always work from the freshest state of the relation so concurrent
+        // callers (webhook, verify, confirm-payment) never create duplicates.
+        $this->load('ticket');
+
         if (!$this->ticket) {
             $ticketCode = 'TKT-' . date('Ymd') . '-' . strtoupper(uniqid());
 
@@ -221,11 +225,14 @@ class Booking extends Model
                 'status' => 'active',
                 'boarding_status' => 'pending'
             ]);
+
+            // Refresh so $this->ticket reflects the row we just inserted.
+            $this->load('ticket');
         }
 
         if (!$this->ticket_code) {
             $this->update([
-                'ticket_code' => $ticketCode ?? $this->ticket->ticket_code,
+                'ticket_code' => $this->ticket->ticket_code,
                 'ticket_status' => 'active',
                 'boarding_status' => 'pending'
             ]);

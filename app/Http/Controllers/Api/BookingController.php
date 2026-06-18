@@ -385,36 +385,56 @@ class BookingController extends Controller
                 ], 403);
             }
 
+            // Idempotency guard: if this booking was already paid/confirmed
+            // (e.g. by the Midtrans webhook or a previous tap), just return the
+            // existing ticket instead of creating duplicate payments/tickets.
+            if ($booking->payment_status === 'paid' && $booking->booking_status === 'confirmed') {
+                $booking->generateTicket();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Payment already confirmed',
+                    'data' => [
+                        'booking_id' => $booking->id,
+                        'booking_status' => $booking->booking_status,
+                        'payment_status' => $booking->payment_status,
+                        'ticket_code' => optional($booking->ticket)->ticket_code,
+                    ]
+                ]);
+            }
+
+            $paymentMethod = $request->payment_method ?? 'transfer';
+
             // Update booking status
             $booking->update([
                 'booking_status' => 'confirmed',
                 'payment_status' => 'paid',
-                'payment_method' => $request->payment_method ?? 'transfer',
+                'payment_method' => $paymentMethod,
                 'payment_date' => now(),
             ]);
 
-            // Create Payment record
-            Payment::create([
-                'booking_id' => $booking->id,
-                'transaction_id' => 'TRX-' . strtoupper(uniqid()),
-                'amount' => $booking->total_price,
-                'payment_method' => $request->payment_method ?? 'transfer',
-                'status' => 'paid',
-                'payment_date' => now(),
-            ]);
-
-            // Create Ticket
-            $ticketCode = Ticket::generateTicketCode();
-            $ticket = Ticket::create([
-                'ticket_code' => $ticketCode,
-                'booking_id' => $booking->id,
-                'status' => 'active',
-                'boarding_status' => 'pending',
-                'qr_code' => base64_encode(json_encode([
-                    'ticket_code' => $ticketCode,
+            // Reuse the existing payment row from initiate() if present;
+            // otherwise create one. Never create a second payment record.
+            $payment = Payment::where('booking_id', $booking->id)->latest('id')->first();
+            if ($payment) {
+                $payment->update([
+                    'status' => 'success',
+                    'payment_method' => $paymentMethod,
+                    'payment_date' => now(),
+                ]);
+            } else {
+                Payment::create([
                     'booking_id' => $booking->id,
-                ]))
-            ]);
+                    'transaction_id' => 'TRX-' . strtoupper(uniqid()),
+                    'amount' => $booking->total_price,
+                    'payment_method' => $paymentMethod,
+                    'status' => 'success',
+                    'payment_date' => now(),
+                ]);
+            }
+
+            // Issue the ticket through the guarded generator (no duplicates).
+            $booking->generateTicket();
 
             return response()->json([
                 'status' => 'success',
@@ -423,7 +443,7 @@ class BookingController extends Controller
                     'booking_id' => $booking->id,
                     'booking_status' => $booking->booking_status,
                     'payment_status' => $booking->payment_status,
-                    'ticket_code' => $ticket->ticket_code,
+                    'ticket_code' => optional($booking->ticket)->ticket_code,
                 ]
             ]);
 

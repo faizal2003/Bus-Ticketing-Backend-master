@@ -23,44 +23,7 @@
             @endif
         </div>
 
-        <!-- Alerts -->
-        @if (session('success'))
-            <div class="rounded-md bg-green-50 p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-check-circle text-green-400"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
-                    </div>
-                    <div class="ml-auto pl-3">
-                        <button type="button" onclick="this.parentElement.parentElement.parentElement.remove()"
-                            class="inline-flex bg-green-50 rounded-md p-1.5 text-green-500 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-600">
-                            <i class="fas fa-times h-4 w-4"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="rounded-md bg-red-50 p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-circle text-red-400"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
-                    </div>
-                    <div class="ml-auto pl-3">
-                        <button type="button" onclick="this.parentElement.parentElement.parentElement.remove()"
-                            class="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600">
-                            <i class="fas fa-times h-4 w-4"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        @endif
+        {{-- Flash messages are rendered globally in layouts.admin to avoid duplicate notifications --}}
 
         <!-- Filters -->
         <div class="bg-white shadow rounded-lg p-4">

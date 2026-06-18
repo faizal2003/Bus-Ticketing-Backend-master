@@ -110,18 +110,6 @@
                 </div>
 
 
-                <!-- Bagian Format Tiket -->
-                <div class="pb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Format Tiket (Template)</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Template Tiket</label>
-                        <textarea name="ticket_format" rows="6" class="mt-1 w-full border rounded-lg px-3 py-2 font-mono text-sm">{{ old('ticket_format', $settingValues['ticket_format'] ?? '') }}</textarea>
-                        @error('ticket_format')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
                 <!-- Tombol Simpan -->
                 <div class="flex justify-end pt-4">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">

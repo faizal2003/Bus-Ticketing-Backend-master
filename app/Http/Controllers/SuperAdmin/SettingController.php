@@ -46,7 +46,6 @@ class SettingController extends Controller
             'qr_size' => 'required|integer|min:100|max:800',
             'qr_margin' => 'required|integer|min:0|max:50',
             'qr_error_correction' => 'required|in:L,M,Q,H',
-            'ticket_format' => 'required|string',
         ];
 
         $validated = $request->validate($rules);

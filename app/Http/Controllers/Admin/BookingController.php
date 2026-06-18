@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Booking;
+use App\Models\Payment;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -116,13 +117,29 @@ class BookingController extends Controller
 
     public function confirm($id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::with(['payment', 'ticket'])->findOrFail($id);
 
         try {
+            // Idempotency: don't re-confirm an already paid/confirmed booking.
+            if ($booking->payment_status === 'paid' && $booking->booking_status === 'confirmed') {
+                return redirect()->route('admin.bookings.show', $id)
+                    ->with('success', 'Pemesanan sudah dikonfirmasi sebelumnya');
+            }
+
             $booking->update([
                 'booking_status' => 'confirmed',
                 'payment_status' => 'paid'
             ]);
+
+            // Keep the payment record consistent with the booking so the panel
+            // never shows two conflicting statuses (paid booking / pending payment).
+            $payment = Payment::where('booking_id', $booking->id)->latest('id')->first();
+            if ($payment) {
+                $payment->update([
+                    'status' => 'success',
+                    'payment_date' => $payment->payment_date ?? now(),
+                ]);
+            }
 
             // Generate ticket if not exists
             if (!$booking->ticket) {
