@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\TicketController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RouteController;
+use App\Http\Controllers\Api\RefundController;
 
 // 🔓 Public Routes
 Route::get('/routes', [RouteController::class, 'index']);
@@ -67,6 +68,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/initiate', [PaymentController::class, 'initiate']);
         Route::get('/{payment}/status', [PaymentController::class, 'status']);
         Route::post('/{payment}/verify', [PaymentController::class, 'verify']);
+    });
+
+    // 💰 Refund Routes
+    Route::prefix('refunds')->group(function () {
+        Route::get('/', [RefundController::class, 'index']); // List user's refunds
+        Route::get('/{refund}', [RefundController::class, 'show']); // Refund details
     });
 
     // 🚍 Conductor Routes (Hanya untuk kondektur)

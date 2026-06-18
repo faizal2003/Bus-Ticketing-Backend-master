@@ -94,7 +94,9 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
 
         // Refund Management
         Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
+        Route::get('refunds/{refund}', [AdminRefundController::class, 'show'])->name('refunds.show');
         Route::put('refunds/{refund}', [AdminRefundController::class, 'update'])->name('refunds.update');
+        Route::post('refunds/{refund}/update-with-notes', [AdminRefundController::class, 'updateWithNotes'])->name('refunds.update-with-notes');
 
         // Booking Management
         Route::prefix('bookings')->name('bookings.')->group(function () {

@@ -189,21 +189,30 @@ class BookingController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($booking) {
+                    // Safely get schedule and bus data
+                    $schedule = $booking->schedule;
+                    $bus = $schedule ? $schedule->bus : null;
+                    
                     return [
                         'id' => $booking->id,
                         'booking_code' => $booking->booking_code,
-                        'schedule' => [
-                            'departure_city' => $booking->schedule->departure_city,
-                            'arrival_city' => $booking->schedule->arrival_city,
-                            'departure_time' => $booking->schedule->departure_time->format('Y-m-d H:i:s'),
-                            'bus_name' => $booking->schedule->bus->bus_name,
-                        ],
+                        'schedule' => $schedule ? [
+                            'id' => $schedule->id,
+                            'departure_city' => $schedule->departure_city ?? '-',
+                            'arrival_city' => $schedule->arrival_city ?? '-',
+                            'departure_time' => $schedule->departure_time ? $schedule->departure_time->format('Y-m-d H:i:s') : null,
+                            'arrival_time' => $schedule->arrival_time ? $schedule->arrival_time->format('Y-m-d H:i:s') : null,
+                            'bus_name' => $bus ? $bus->bus_name : 'Bus',
+                            'bus_number' => $bus ? $bus->bus_number : '-',
+                            'bus_type' => $bus ? $bus->bus_type : '-',
+                            'duration' => $this->calculateDuration($schedule->departure_time, $schedule->arrival_time),
+                        ] : null,
                         'total_passengers' => $booking->total_passengers,
                         'total_price' => (float) $booking->total_price,
                         'formatted_total_price' => 'Rp ' . number_format($booking->total_price, 0, ',', '.'),
                         'booking_status' => $booking->booking_status,
                         'payment_status' => $booking->payment_status,
-                        'seats' => $booking->passengers->pluck('seat_number'),
+                        'seats' => $booking->passengers->pluck('seat_number')->toArray(),
                         'created_at' => $booking->created_at->format('Y-m-d H:i:s'),
                         'has_ticket' => $booking->tickets->count() > 0,
                         'ticket_status' => $booking->tickets->first()->status ?? null,
@@ -222,6 +231,32 @@ class BookingController extends Controller
                 'message' => 'Failed to retrieve bookings',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Calculate duration between two times
+     */
+    private function calculateDuration($departureTime, $arrivalTime)
+    {
+        if (!$departureTime || !$arrivalTime) {
+            return null;
+        }
+
+        try {
+            $diff = $departureTime->diff($arrivalTime);
+            $hours = $diff->h + ($diff->days * 24);
+            $minutes = $diff->i;
+            
+            if ($hours > 0 && $minutes > 0) {
+                return "{$hours}j {$minutes}m";
+            } elseif ($hours > 0) {
+                return "{$hours} jam";
+            } else {
+                return "{$minutes} menit";
+            }
+        } catch (\Exception $e) {
+            return null;
         }
     }
 
@@ -322,11 +357,16 @@ class BookingController extends Controller
 
             // Create refund request if paid
             if ($booking->payment_status === 'success' || $booking->booking_status === 'confirmed') {
+                // Read reason from body or query string (DELETE bodies can be
+                // dropped by some proxies, so fall back to the query param).
+                $reason = $request->input('reason') ?: $request->query('reason');
+                $reason = trim((string) $reason);
+
                 \App\Models\Refund::create([
                     'booking_id' => $booking->id,
                     'user_id' => $booking->user_id,
                     'amount' => $booking->total_price,
-                    'reason' => $request->reason ?? 'Cancelled by passenger',
+                    'reason' => $reason !== '' ? $reason : 'Cancelled by passenger',
                     'status' => 'pending',
                 ]);
             }
