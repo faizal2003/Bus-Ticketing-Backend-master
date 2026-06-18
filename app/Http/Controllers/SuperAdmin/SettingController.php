@@ -43,9 +43,6 @@ class SettingController extends Controller
             'midtrans_merchant_id' => 'nullable|string',
             'midtrans_environment' => 'required|in:sandbox,production',
             'payment_timeout' => 'required|integer|min:1|max:1440',
-            'qr_size' => 'required|integer|min:100|max:800',
-            'qr_margin' => 'required|integer|min:0|max:50',
-            'qr_error_correction' => 'required|in:L,M,Q,H',
             'ticket_format' => 'required|string',
         ];
 
@@ -72,22 +69,6 @@ class SettingController extends Controller
 
         return redirect()->route('superadmin.settings.index')
             ->with('success', 'Konfigurasi sistem berhasil diperbarui.');
-    }
-
-    /**
-     * Clear application cache.
-     */
-    public function clearCache(Request $request)
-    {
-        try {
-            Artisan::call('cache:clear');
-            Artisan::call('view:clear');
-            Artisan::call('route:clear');
-            Artisan::call('config:clear');
-            return back()->with('success', 'Cache berhasil dibersihkan.');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membersihkan cache: ' . $e->getMessage());
-        }
     }
 
     /**
