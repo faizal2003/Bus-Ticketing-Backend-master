@@ -12,6 +12,7 @@ class Ticket extends Model
     protected $fillable = [
         'ticket_code',
         'booking_id',
+        'passenger_id',
         'qr_code',
         'status',
         'boarding_status',
@@ -27,6 +28,11 @@ class Ticket extends Model
     public function booking()
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function passenger()
+    {
+        return $this->belongsTo(BookingPassenger::class, 'passenger_id');
     }
 
     public function scannedBy()

@@ -184,7 +184,7 @@ class BookingController extends Controller
         try {
             $user = $request->user();
 
-            $bookings = Booking::with(['schedule', 'schedule.bus', 'passengers', 'payment', 'ticket'])
+            $bookings = Booking::with(['schedule', 'schedule.bus', 'passengers', 'payment', 'tickets'])
                 ->where('user_id', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -205,8 +205,8 @@ class BookingController extends Controller
                         'payment_status' => $booking->payment_status,
                         'seats' => $booking->passengers->pluck('seat_number'),
                         'created_at' => $booking->created_at->format('Y-m-d H:i:s'),
-                        'has_ticket' => !is_null($booking->ticket),
-                        'ticket_status' => $booking->ticket->status ?? null,
+                        'has_ticket' => $booking->tickets->count() > 0,
+                        'ticket_status' => $booking->tickets->first()->status ?? null,
                     ];
                 });
 
@@ -462,17 +462,17 @@ class BookingController extends Controller
     public function getTickets($id, Request $request)
     {
         try {
-            $booking = Booking::with(['ticket', 'passengers'])
+            $booking = Booking::with(['tickets.passenger', 'passengers'])
                 ->where(function($query) use ($id) {
                     $query->where('id', $id)
                           ->orWhere('booking_code', $id);
                 })
                 ->first();
 
-            if (!$booking || !$booking->ticket) {
+            if (!$booking || $booking->tickets->isEmpty()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Ticket not found'
+                    'message' => 'Tickets not found'
                 ], 404);
             }
 
@@ -487,12 +487,19 @@ class BookingController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => [
-                    'ticket' => [
-                        'ticket_code' => $booking->ticket->ticket_code,
-                        'status' => $booking->ticket->status,
-                        'boarding_status' => $booking->ticket->boarding_status,
-                        'qr_data' => base64_encode($booking->ticket->generateQrData()),
-                    ]
+                    'tickets' => $booking->tickets->map(function($ticket) {
+                        return [
+                            'ticket_code' => $ticket->ticket_code,
+                            'status' => $ticket->status,
+                            'boarding_status' => $ticket->boarding_status,
+                            'passenger' => [
+                                'name' => $ticket->passenger->full_name,
+                                'seat_number' => $ticket->passenger->seat_number,
+                                'id_number' => $ticket->passenger->id_number,
+                            ],
+                            'qr_data' => base64_encode($ticket->qr_code),
+                        ];
+                    })
                 ]
             ]);
         } catch (\Exception $e) {

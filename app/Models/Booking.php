@@ -58,6 +58,11 @@ class Booking extends Model
         return $this->hasOne(Ticket::class);
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function scopeByPaymentMethod($query, $method)
     {
         return $query->where('payment_method', $method);
@@ -205,34 +210,58 @@ class Booking extends Model
 
     public function generateTicket()
     {
-        // Always work from the freshest state of the relation so concurrent
+        // Always work from the freshest state of the relations so concurrent
         // callers (webhook, verify, confirm-payment) never create duplicates.
-        $this->load('ticket');
+        $this->load('tickets', 'passengers');
 
-        if (!$this->ticket) {
-            $ticketCode = 'TKT-' . date('Ymd') . '-' . strtoupper(uniqid());
-
-            $qrData = json_encode([
-                'booking_code' => $this->booking_code,
-                'ticket_code' => $ticketCode,
-                'schedule_id' => $this->schedule_id,
-                'timestamp' => now()->timestamp
-            ]);
-
-            $this->ticket()->create([
-                'ticket_code' => $ticketCode,
-                'qr_code' => $qrData,
-                'status' => 'active',
-                'boarding_status' => 'pending'
-            ]);
-
-            // Refresh so $this->ticket reflects the row we just inserted.
-            $this->load('ticket');
+        // Check if we already have tickets for all passengers
+        if ($this->tickets->count() >= $this->passengers->count()) {
+            // Tickets already generated, ensure booking fields are synced
+            if (!$this->ticket_code && $this->tickets->first()) {
+                $this->update([
+                    'ticket_code' => $this->tickets->first()->ticket_code,
+                    'ticket_status' => 'active',
+                    'boarding_status' => 'pending'
+                ]);
+            }
+            return $this;
         }
 
-        if (!$this->ticket_code) {
+        // Generate a ticket for each passenger
+        foreach ($this->passengers as $passenger) {
+            // Check if this passenger already has a ticket
+            $existingTicket = $this->tickets->where('passenger_id', $passenger->id)->first();
+            
+            if (!$existingTicket) {
+                $ticketCode = 'TKT-' . date('Ymd') . '-' . strtoupper(uniqid());
+
+                $qrData = json_encode([
+                    'booking_code' => $this->booking_code,
+                    'ticket_code' => $ticketCode,
+                    'schedule_id' => $this->schedule_id,
+                    'passenger_id' => $passenger->id,
+                    'passenger_name' => $passenger->full_name,
+                    'seat_number' => $passenger->seat_number,
+                    'timestamp' => now()->timestamp
+                ]);
+
+                $this->tickets()->create([
+                    'ticket_code' => $ticketCode,
+                    'passenger_id' => $passenger->id,
+                    'qr_code' => $qrData,
+                    'status' => 'active',
+                    'boarding_status' => 'pending'
+                ]);
+            }
+        }
+
+        // Refresh tickets relation
+        $this->load('tickets');
+
+        // Update booking with first ticket's code (for backward compatibility)
+        if (!$this->ticket_code && $this->tickets->first()) {
             $this->update([
-                'ticket_code' => $this->ticket->ticket_code,
+                'ticket_code' => $this->tickets->first()->ticket_code,
                 'ticket_status' => 'active',
                 'boarding_status' => 'pending'
             ]);

@@ -23,10 +23,6 @@ use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingContro
 use App\Http\Controllers\SuperAdmin\ReportController as SuperAdminReportController;
 use App\Http\Controllers\SuperAdmin\RouteController as SuperAdminRouteController;
 
-// Conductor
-use App\Http\Controllers\Conductor\DashboardController as ConductorDashboardController;
-use App\Http\Controllers\Conductor\ScanController as ConductorScanController;
-
 /*
 |--------------------------------------------------------------------------
 | Public Routes
@@ -38,7 +34,6 @@ Route::get('/', function () {
         return match ($user->role) {
             'super_admin' => redirect()->route('superadmin.dashboard'),
             'admin'       => redirect()->route('admin.dashboard'),
-            'kondektur'   => redirect()->route('conductor.dashboard'),
             default       => redirect()->route('dashboard'),
         };
     }
@@ -86,7 +81,7 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
             Route::get('buses/create', [AdminBusController::class, 'create'])->name('buses.create');
             Route::post('buses', [AdminBusController::class, 'store'])->name('buses.store');
             Route::get('buses/{bus}/edit', [AdminBusController::class, 'edit'])->name('buses.edit');
-            Route::patch('buses/{bus}', [AdminBusController::class, 'update'])->name('buses.update');
+            Route::match(['put', 'patch'], 'buses/{bus}', [AdminBusController::class, 'update'])->name('buses.update');
             Route::delete('buses/{bus}', [AdminBusController::class, 'destroy'])->name('buses.destroy');
             Route::post('buses/{bus}/toggle-status', [AdminBusController::class, 'toggleStatus'])->name('buses.toggle-status');
         });
@@ -104,6 +99,8 @@ Route::middleware(['auth', 'check.role:admin,super_admin'])
         // Booking Management
         Route::prefix('bookings')->name('bookings.')->group(function () {
             Route::get('/', [AdminBookingController::class, 'index'])->name('index');
+            Route::get('/create', [AdminBookingController::class, 'create'])->name('create');
+            Route::post('/', [AdminBookingController::class, 'store'])->name('store');
             Route::get('/{booking}', [AdminBookingController::class, 'show'])->name('show');
             Route::get('/{booking}/print', [AdminBookingController::class, 'print'])->name('print');
             Route::post('/{booking}/confirm', [AdminBookingController::class, 'confirm'])->name('confirm');
@@ -159,24 +156,6 @@ Route::middleware(['auth', 'check.role:super_admin'])
             Route::get('export/revenue/excel', [SuperAdminReportController::class, 'exportRevenueExcel'])->name('export.revenue.excel');
             Route::get('export/buses/pdf', [SuperAdminReportController::class, 'exportBusesPDF'])->name('export.buses.pdf');
             Route::get('export/buses/excel', [SuperAdminReportController::class, 'exportBusesExcel'])->name('export.buses.excel');
-        });
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Conductor Routes (only kondektur)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'check.role:kondektur'])
-    ->prefix('conductor')
-    ->name('conductor.')
-    ->group(function () {
-        Route::get('/dashboard', [ConductorDashboardController::class, 'index'])->name('dashboard');
-
-        // QR Scanning
-        Route::prefix('scan')->name('scan.')->group(function () {
-            Route::get('/', [ConductorScanController::class, 'index'])->name('index');
-            Route::post('/', [ConductorScanController::class, 'processScan'])->name('process');
         });
     });
 

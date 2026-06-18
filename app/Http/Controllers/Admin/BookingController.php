@@ -54,6 +54,128 @@ class BookingController extends Controller
         ));
     }
 
+    public function create()
+    {
+        $schedules = \App\Models\BusSchedule::with('bus')
+            ->where('status', 'active')
+            ->where('departure_time', '>=', now())
+            ->orderBy('departure_time', 'asc')
+            ->get();
+
+        return view('admin.bookings.create', compact('schedules'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'schedule_id' => 'required|exists:bus_schedules,id',
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'nullable|email|max:255',
+            'customer_phone' => 'required|string|max:20',
+            'id_number' => 'nullable|string|max:50',
+            'total_passengers' => 'required|integer|min:1|max:10',
+            'seats' => 'required|array|min:1',
+            'seats.*' => 'required|string|max:10',
+            'notes' => 'nullable|string',
+            'payment_method' => 'required|in:cash,bank_transfer',
+            'auto_confirm' => 'nullable|boolean',
+        ]);
+
+        try {
+            // Get schedule
+            $schedule = \App\Models\BusSchedule::with('bus')->findOrFail($validated['schedule_id']);
+
+            // Check if schedule is available
+            if ($schedule->status !== 'active') {
+                return redirect()->back()->withInput()->with('error', 'Jadwal tidak tersedia');
+            }
+
+            // Check available seats
+            if ($schedule->available_seats < $validated['total_passengers']) {
+                return redirect()->back()->withInput()->with('error', 'Kursi tidak cukup tersedia');
+            }
+
+            // Check seat availability
+            $seatNumbers = $validated['seats'];
+            $bookedSeats = \App\Models\BookingPassenger::whereHas('booking', function($query) use ($schedule) {
+                $query->where('schedule_id', $schedule->id)
+                      ->whereIn('booking_status', ['confirmed', 'pending']);
+            })->pluck('seat_number')->toArray();
+
+            foreach ($seatNumbers as $seatNumber) {
+                if (in_array($seatNumber, $bookedSeats)) {
+                    return redirect()->back()->withInput()->with('error', 'Kursi ' . $seatNumber . ' sudah dipesan');
+                }
+            }
+
+            // Find or create user for this customer
+            $user = \App\Models\User::where('email', $validated['customer_email'] ?? $validated['customer_phone'] . '@manual.booking')->first();
+            
+            if (!$user) {
+                $user = \App\Models\User::create([
+                    'name' => $validated['customer_name'],
+                    'email' => $validated['customer_email'] ?? $validated['customer_phone'] . '@manual.booking',
+                    'phone_number' => $validated['customer_phone'],
+                    'role' => 'penumpang',
+                    'password' => bcrypt(uniqid()), // Random password for manual bookings
+                ]);
+            }
+
+            // Calculate total price
+            $ticketTotal = $schedule->price_per_seat * $validated['total_passengers'];
+            $tax = $ticketTotal * 0.1;
+            $serviceFee = 5000;
+            $totalPrice = $ticketTotal + $tax + $serviceFee;
+
+            // Create booking
+            $booking = Booking::create([
+                'booking_code' => Booking::generateBookingCode(),
+                'user_id' => $user->id,
+                'schedule_id' => $schedule->id,
+                'total_passengers' => $validated['total_passengers'],
+                'total_price' => $totalPrice,
+                'booking_status' => $request->auto_confirm ? 'confirmed' : 'pending',
+                'payment_status' => $request->auto_confirm ? 'paid' : 'pending',
+                'notes' => $validated['notes'],
+            ]);
+
+            // Add passengers
+            foreach ($seatNumbers as $index => $seatNumber) {
+                $booking->addPassenger([
+                    'full_name' => $validated['customer_name'] . ($index > 0 ? ' (Penumpang ' . ($index + 1) . ')' : ''),
+                    'id_number' => $validated['id_number'] ?? null,
+                    'phone' => $validated['customer_phone'],
+                    'seat_number' => $seatNumber,
+                ]);
+            }
+
+            // Create payment record
+            Payment::create([
+                'booking_id' => $booking->id,
+                'transaction_id' => 'MANUAL-' . strtoupper(uniqid()),
+                'amount' => $totalPrice,
+                'payment_method' => $validated['payment_method'],
+                'status' => $request->auto_confirm ? 'success' : 'pending',
+                'payment_date' => $request->auto_confirm ? now() : null,
+            ]);
+
+            // Generate ticket if auto-confirm
+            if ($request->auto_confirm) {
+                $this->generateTicket($booking);
+            }
+
+            // Update schedule available seats
+            $schedule->updateAvailableSeats();
+
+            return redirect()->route('admin.bookings.show', $booking->id)
+                ->with('success', 'Pemesanan manual berhasil dibuat');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Gagal membuat pemesanan: ' . $e->getMessage());
+        }
+    }
+
     public function show($id)
     {
         $booking = Booking::with([

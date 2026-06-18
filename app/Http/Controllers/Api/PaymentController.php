@@ -237,11 +237,9 @@ class PaymentController extends Controller
                 'payment_date' => now(),
             ]);
 
-            // For cash payment, immediately confirm the booking
-            if ($request->payment_method === 'cash') {
-                $booking->update(['booking_status' => 'confirmed']);
-                // The payment status stays pending until paid to conductor
-            }
+            // For cash payment, keep booking status as pending
+            // Admin will manually confirm payment later
+            // Do NOT automatically confirm cash payments
 
             // Normalize the gateway response so the client always gets the
             // same shape regardless of the chosen payment method.
