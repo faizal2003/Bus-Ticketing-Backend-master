@@ -218,69 +218,49 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                @if(auth()->user()->is_super_admin)
-                <a href="{{ route('admin.buses.create') }}"
-                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 hover:border-blue-400 transition-colors">
-                    <i class="fas fa-plus-circle text-blue-600 text-3xl mb-3"></i>
-                    <p class="text-sm font-medium text-gray-900">Tambah Bus Baru</p>
-                    <p class="text-xs text-gray-500 mt-1">Tambah bus ke armada</p>
-                </a>
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-900">Aksi Cepat</h3>
+                <p class="text-gray-500 text-sm mt-1">Akses fitur utama dengan cepat</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                @if (auth()->user()->is_super_admin)
+                    <a href="{{ route('admin.buses.create') }}"
+                        class="action-card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-8 hover:shadow-2xl hover:border-blue-400 transition-all duration-300 group">
+                        <div class="flex flex-col items-center justify-center h-full">
+                            <div
+                                class="icon-container bg-blue-500 text-white rounded-full p-5 mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                                <i class="fas fa-plus-circle text-2xl"></i>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 text-center">Tambah Bus Baru</h4>
+                            <p class="text-sm text-gray-600 mt-2 text-center">Tambahkan armada bus terbaru</p>
+                        </div>
+                    </a>
                 @endif
 
                 <a href="{{ route('admin.schedules.create') }}"
-                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-green-300 rounded-lg hover:bg-green-50 hover:border-green-400 transition-colors">
-                    <i class="fas fa-calendar-plus text-green-600 text-3xl mb-3"></i>
-                    <p class="text-sm font-medium text-gray-900">Buat Jadwal Baru</p>
-                    <p class="text-xs text-gray-500 mt-1">Buat jadwal perjalanan</p>
+                    class="action-card bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-xl p-8 hover:shadow-2xl hover:border-green-400 transition-all duration-300 group">
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <div
+                            class="icon-container bg-green-500 text-white rounded-full p-5 mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                            <i class="fas fa-calendar-plus text-2xl"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-gray-900 text-center">Buat Jadwal Baru</h4>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Buat jadwal perjalanan baru</p>
+                    </div>
                 </a>
 
                 <a href="{{ route('admin.reports.index') }}"
-                    class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-50 hover:border-purple-400 transition-colors">
-                    <i class="fas fa-file-export text-purple-600 text-3xl mb-3"></i>
-                    <p class="text-sm font-medium text-gray-900">Generate Laporan</p>
-                    <p class="text-xs text-gray-500 mt-1">Buat laporan kinerja</p>
+                    class="action-card bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-8 hover:shadow-2xl hover:border-purple-400 transition-all duration-300 group">
+                    <div class="flex flex-col items-center justify-center h-full">
+                        <div
+                            class="icon-container bg-purple-500 text-white rounded-full p-5 mb-4 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                            <i class="fas fa-file-export text-2xl"></i>
+                        </div>
+                        <h4 class="text-base font-bold text-gray-900 text-center">Generate Laporan</h4>
+                        <p class="text-sm text-gray-600 mt-2 text-center">Buat laporan kinerja sistem</p>
+                    </div>
                 </a>
-            </div>
-        </div>
-
-        <!-- System Status -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Sistem</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-green-600">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <p class="text-sm font-medium text-gray-900 mt-2">Sistem Aktif</p>
-                    <p class="text-xs text-gray-500">Semua sistem berjalan normal</p>
-                </div>
-
-                <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-blue-600">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <p class="text-sm font-medium text-gray-900 mt-2">Database</p>
-                    <p class="text-xs text-gray-500">Koneksi stabil</p>
-                </div>
-
-                <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-green-600">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <p class="text-sm font-medium text-gray-900 mt-2">Server</p>
-                    <p class="text-xs text-gray-500">Perform optimal</p>
-                </div>
-
-                <div class="text-center p-4 bg-gray-50 rounded-lg">
-                    <div class="text-2xl font-bold text-yellow-600">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <p class="text-sm font-medium text-gray-900 mt-2">Waktu</p>
-                    <p class="text-xs text-gray-500">{{ now()->format('H:i') }}</p>
-                </div>
             </div>
         </div>
     </div>
@@ -288,6 +268,76 @@
 
 @push('styles')
     <style>
+        /* Action Cards */
+        .action-card {
+            min-height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .action-card:hover::before {
+            left: 100%;
+        }
+
+        .icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            min-height: 80px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-card:hover .icon-container {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .action-card {
+                min-height: 220px;
+            }
+
+            .icon-container {
+                min-width: 70px;
+                min-height: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .action-card {
+                min-height: 200px;
+            }
+
+            .icon-container {
+                min-width: 60px;
+                min-height: 60px;
+            }
+        }
+
+        /* Smooth transitions */
+        * {
+            transition-property: background-color, border-color, color, fill, stroke, box-shadow, transform;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+
         .transition-colors {
             transition: all 0.3s ease;
         }
