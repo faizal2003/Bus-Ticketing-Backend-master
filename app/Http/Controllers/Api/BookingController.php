@@ -156,7 +156,7 @@ class BookingController extends Controller
                     'schedule' => [
                         'departure_city' => $schedule->departure_city,
                         'arrival_city' => $schedule->arrival_city,
-                        'departure_time' => $schedule->departure_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $schedule->departure_time->toIso8601String(),
                     ],
                     'passengers' => $booking->passengers->map(function ($passenger) {
                         return [
@@ -200,8 +200,8 @@ class BookingController extends Controller
                             'id' => $schedule->id,
                             'departure_city' => $schedule->departure_city ?? '-',
                             'arrival_city' => $schedule->arrival_city ?? '-',
-                            'departure_time' => $schedule->departure_time ? $schedule->departure_time->format('Y-m-d H:i:s') : null,
-                            'arrival_time' => $schedule->arrival_time ? $schedule->arrival_time->format('Y-m-d H:i:s') : null,
+                            'departure_time' => $schedule->departure_time ? $schedule->departure_time->toIso8601String() : null,
+                            'arrival_time' => $schedule->arrival_time ? $schedule->arrival_time->toIso8601String() : null,
                             'bus_name' => $bus ? $bus->bus_name : 'Bus',
                             'bus_number' => $bus ? $bus->bus_number : '-',
                             'bus_type' => $bus ? $bus->bus_type : '-',
@@ -291,8 +291,8 @@ class BookingController extends Controller
                         'id' => $booking->schedule->id,
                         'departure_city' => $booking->schedule->departure_city,
                         'arrival_city' => $booking->schedule->arrival_city,
-                        'departure_time' => $booking->schedule->departure_time->format('Y-m-d H:i:s'),
-                        'arrival_time' => $booking->schedule->arrival_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $booking->schedule->departure_time->toIso8601String(),
+                        'arrival_time' => $booking->schedule->arrival_time->toIso8601String(),
                         'bus' => [
                             'name' => $booking->schedule->bus->bus_name,
                             'number' => $booking->schedule->bus->bus_number,

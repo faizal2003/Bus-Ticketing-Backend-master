@@ -67,6 +67,50 @@
                                     </span>
                                 </div>
                             </div>
+                            <div class="flex items-start">
+                                <div class="w-1/3 text-gray-600 pt-1">Driver / Sopir:</div>
+                                <div class="w-2/3 font-medium flex items-center">
+                                    @if ($bus->driver)
+                                        <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border mr-3 flex items-center justify-center flex-shrink-0 border-gray-300">
+                                            @if($bus->driver->picture_url)
+                                                <img class="w-full h-full object-cover" src="{{ $bus->driver->picture_url }}" alt="{{ $bus->driver->name }}">
+                                            @else
+                                                <i class="fas fa-user text-gray-400 text-lg"></i>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-gray-900">{{ $bus->driver->name }}</p>
+                                            <p class="text-sm text-gray-500">{{ $bus->driver->phone }}</p>
+                                            @if($bus->driver->license_number)
+                                                <p class="text-xs text-gray-400">SIM: {{ $bus->driver->license_number }}</p>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-gray-500 italic">Belum ditentukan</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-1/3 text-gray-600 pt-1">Kondektur:</div>
+                                <div class="w-2/3 font-medium flex items-center">
+                                    @if ($bus->conductor)
+                                        <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border mr-3 flex items-center justify-center flex-shrink-0 border-gray-300">
+                                            @if($bus->conductor->avatar_url)
+                                                <img class="w-full h-full object-cover" src="{{ $bus->conductor->avatar_url }}" alt="{{ $bus->conductor->name }}">
+                                            @else
+                                                <i class="fas fa-user text-gray-400 text-lg"></i>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-gray-900">{{ $bus->conductor->name }}</p>
+                                            <p class="text-sm text-gray-500">{{ $bus->conductor->phone }}</p>
+                                            <p class="text-xs text-gray-400">Email: {{ $bus->conductor->email }}</p>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-500 italic">Belum ditentukan</span>
+                                    @endif
+                                </div>
+                            </div>
                             <div class="flex">
                                 <div class="w-1/3 text-gray-600">Tanggal Ditambahkan:</div>
                                 <div class="w-2/3 font-medium">{{ $bus->created_at->format('d M Y, H:i') }}</div>

@@ -108,6 +108,44 @@
                         @enderror
                     </div>
 
+                    <!-- Driver -->
+                    <div>
+                        <label for="driver_id" class="block text-sm font-medium text-gray-700">
+                            Driver / Sopir
+                        </label>
+                        <select name="driver_id" id="driver_id"
+                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('driver_id') border-red-500 @enderror">
+                            <option value="">Pilih Driver (Opsional)</option>
+                            @foreach ($drivers as $driver)
+                                <option value="{{ $driver->id }}" {{ old('driver_id') == $driver->id ? 'selected' : '' }}>
+                                    {{ $driver->name }} ({{ $driver->phone }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('driver_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Conductor -->
+                    <div>
+                        <label for="conductor_id" class="block text-sm font-medium text-gray-700">
+                            Kondektur / Conductor
+                        </label>
+                        <select name="conductor_id" id="conductor_id"
+                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md @error('conductor_id') border-red-500 @enderror">
+                            <option value="">Pilih Kondektur (Opsional)</option>
+                            @foreach ($conductors as $conductor)
+                                <option value="{{ $conductor->id }}" {{ old('conductor_id') == $conductor->id ? 'selected' : '' }}>
+                                    {{ $conductor->name }} ({{ $conductor->phone }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('conductor_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Image -->
                     <div>
                         <label for="image" class="block text-sm font-medium text-gray-700">

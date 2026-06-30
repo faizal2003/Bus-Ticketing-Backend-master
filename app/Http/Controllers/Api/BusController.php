@@ -90,8 +90,8 @@ class BusController extends Controller
                             'destination' => $schedule->arrival_city,
                             'duration' => $schedule->duration,
                         ],
-                        'departure_time' => $schedule->departure_time,
-                        'arrival_time' => $schedule->arrival_time,
+                        'departure_time' => $schedule->departure_time->toIso8601String(),
+                        'arrival_time' => $schedule->arrival_time->toIso8601String(),
                         'price' => (float) $schedule->price_per_seat,
                         'available_seats' => max(0, ($schedule->bus->total_seats ?? 40) - $bookedSeatsCount),
                         'status' => $schedule->status,
@@ -120,7 +120,7 @@ class BusController extends Controller
     public function show(Bus $bus)
     {
         try {
-            $bus->load(['schedules' => function ($query) {
+            $bus->load(['driver', 'conductor', 'schedules' => function ($query) {
                 $query->where('departure_time', '>', now())
                       ->where('status', 'active')
                       ->orderBy('departure_time', 'asc');
@@ -140,6 +140,10 @@ class BusController extends Controller
                         'image' => $bus->image_url,
                         'driver_name' => $bus->driver_name,
                         'driver_phone' => $bus->driver_phone,
+                        'driver_picture' => $bus->driver?->picture_url,
+                        'conductor_name' => $bus->conductor?->name,
+                        'conductor_phone' => $bus->conductor?->phone,
+                        'conductor_picture' => $bus->conductor?->avatar_url,
                         'plate_number' => $bus->plate_number,
                         'schedules' => $bus->schedules->map(function ($schedule) use ($bus) {
                             $bookedSeatsCount = $schedule->bookings()
@@ -148,8 +152,8 @@ class BusController extends Controller
 
                             return [
                                 'id' => $schedule->id,
-                                'departure_time' => $schedule->departure_time,
-                                'arrival_time' => $schedule->arrival_time,
+                                'departure_time' => $schedule->departure_time->toIso8601String(),
+                                'arrival_time' => $schedule->arrival_time->toIso8601String(),
                                 'price' => (float) $schedule->price_per_seat,
                                 'available_seats' => max(0, ($bus->total_seats ?? 40) - $bookedSeatsCount),
                                 'route' => [
@@ -242,7 +246,7 @@ class BusController extends Controller
                     ],
                     'schedule' => [
                         'id' => $schedule->id,
-                        'departure_time' => $schedule->departure_time,
+                        'departure_time' => $schedule->departure_time->toIso8601String(),
                         'price' => (float) $schedule->price_per_seat,
                     ],
                     'seat_layout' => $seatLayout,

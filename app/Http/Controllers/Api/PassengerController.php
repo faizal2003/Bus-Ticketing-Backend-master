@@ -168,8 +168,8 @@ class PassengerController extends Controller
                         'schedule' => [
                             'departure_city' => $booking->schedule->departure_city ?? 'Unknown',
                             'arrival_city' => $booking->schedule->arrival_city ?? 'Unknown',
-                            'departure_time' => $booking->schedule->departure_time?->format('Y-m-d H:i:s'),
-                            'arrival_time' => $booking->schedule->arrival_time?->format('Y-m-d H:i:s'),
+                            'departure_time' => $booking->schedule->departure_time?->toIso8601String(),
+                            'arrival_time' => $booking->schedule->arrival_time?->toIso8601String(),
                         ],
                         'bus' => [
                             'name' => $booking->schedule->bus->bus_name ?? 'Unknown',
@@ -250,8 +250,8 @@ class PassengerController extends Controller
                         'schedule' => [
                             'departure_city' => $booking->schedule->departure_city,
                             'arrival_city' => $booking->schedule->arrival_city,
-                            'departure_time' => $booking->schedule->departure_time->format('Y-m-d H:i:s'),
-                            'arrival_time' => $booking->schedule->arrival_time->format('Y-m-d H:i:s'),
+                            'departure_time' => $booking->schedule->departure_time->toIso8601String(),
+                            'arrival_time' => $booking->schedule->arrival_time->toIso8601String(),
                             'departure_date' => $booking->schedule->departure_time->format('l, d F Y'),
                             'departure_time_formatted' => $booking->schedule->departure_time->format('H:i'),
                             'days_until_departure' => now()->diffInDays($booking->schedule->departure_time),
@@ -337,15 +337,15 @@ class PassengerController extends Controller
             $user = $request->user();
 
             // Delete old avatar if exists
-            if ($user->avatar && Storage::exists('public/avatars/' . basename($user->avatar))) {
-                Storage::delete('public/avatars/' . basename($user->avatar));
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
             }
 
             // Upload new avatar
-            $path = $request->file('avatar')->store('public/avatars');
+            $path = $request->file('avatar')->store('avatars', 'public');
             $avatarUrl = Storage::url($path);
 
-            $user->update(['avatar' => $avatarUrl]);
+            $user->update(['avatar' => $path]);
 
             return response()->json([
                 'status' => 'success',
@@ -355,7 +355,8 @@ class PassengerController extends Controller
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->name,
-                        'avatar' => $avatarUrl,
+                        'avatar' => $path,
+                        'avatar_url' => $avatarUrl,
                     ]
                 ]
             ]);

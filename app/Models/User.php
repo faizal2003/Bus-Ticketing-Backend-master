@@ -41,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_conductor',
         'is_admin',
         'is_super_admin',
+        'avatar_url',
     ];
 
     public function getRoleNames()
@@ -126,5 +127,13 @@ class User extends Authenticatable implements MustVerifyEmail
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
     }
 }

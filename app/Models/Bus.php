@@ -18,6 +18,8 @@ class Bus extends Model
         'facilities',
         'status',
         'image',
+        'driver_id',
+        'conductor_id',
     ];
 
     protected $casts = [
@@ -147,5 +149,25 @@ class Bus extends Model
     {
         $this->update(['status' => $status]);
         return $this;
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class);
+    }
+
+    public function conductor()
+    {
+        return $this->belongsTo(User::class, 'conductor_id');
+    }
+
+    public function getDriverNameAttribute()
+    {
+        return $this->driver ? $this->driver->name : null;
+    }
+
+    public function getDriverPhoneAttribute()
+    {
+        return $this->driver ? $this->driver->phone : null;
     }
 }

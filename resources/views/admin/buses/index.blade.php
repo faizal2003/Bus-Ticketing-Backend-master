@@ -165,6 +165,14 @@
                                             <i class="fas fa-bus mr-2 text-gray-400"></i>
                                             <span class="font-medium capitalize">{{ $busType }}</span>
                                         </div>
+                                        <div class="flex items-center text-xs text-gray-600">
+                                            <i class="fas fa-user mr-2 text-gray-400"></i>
+                                            <span>Driver: {{ $bus->driver->name ?? '-' }}</span>
+                                        </div>
+                                        <div class="flex items-center text-xs text-gray-600">
+                                            <i class="fas fa-id-badge mr-2 text-gray-400"></i>
+                                            <span>Kondektur: {{ $bus->conductor->name ?? '-' }}</span>
+                                        </div>
                                         <div class="text-xs text-gray-500">
                                             <i class="far fa-clock mr-1"></i>
                                             {{ $bus->created_at->format('d M Y') }}

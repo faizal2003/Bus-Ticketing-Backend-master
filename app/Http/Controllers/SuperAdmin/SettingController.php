@@ -43,9 +43,6 @@ class SettingController extends Controller
             'midtrans_merchant_id' => 'nullable|string',
             'midtrans_environment' => 'required|in:sandbox,production',
             'payment_timeout' => 'required|integer|min:1|max:1440',
-            'qr_size' => 'required|integer|min:100|max:800',
-            'qr_margin' => 'required|integer|min:0|max:50',
-            'qr_error_correction' => 'required|in:L,M,Q,H',
         ];
 
         $validated = $request->validate($rules);

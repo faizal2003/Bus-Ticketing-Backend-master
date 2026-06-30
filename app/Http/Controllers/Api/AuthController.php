@@ -53,6 +53,8 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'role' => $user->role,
+                        'avatar' => $user->avatar,
+                        'avatar_url' => $user->avatar_url,
                     ],
                     'token' => $token,
                     'token_type' => 'Bearer'
@@ -129,6 +131,8 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'phone' => $user->phone,
                         'role' => $user->role,
+                        'avatar' => $user->avatar,
+                        'avatar_url' => $user->avatar_url,
                     ],
                     'token' => $token,
                     'token_type' => 'Bearer'
@@ -224,6 +228,7 @@ class AuthController extends Controller
                         'phone' => $user->phone,
                         'role' => $user->role,
                         'avatar' => $user->avatar,
+                        'avatar_url' => $user->avatar_url,
                     ],
                     'token' => $token,
                     'token_type' => 'Bearer'
@@ -276,6 +281,7 @@ class AuthController extends Controller
                         'phone' => $user->phone,
                         'role' => $user->role,
                         'avatar' => $user->avatar,
+                        'avatar_url' => $user->avatar_url,
                     ]
                 ]
             ]);

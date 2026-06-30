@@ -105,8 +105,8 @@ class TicketController extends Controller
                     'schedule' => [
                         'origin' => $ticket->booking->schedule->departure_city,
                         'destination' => $ticket->booking->schedule->arrival_city,
-                        'departure_time' => $ticket->booking->schedule->departure_time->format('Y-m-d H:i:s'),
-                        'arrival_time' => $ticket->booking->schedule->arrival_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $ticket->booking->schedule->departure_time->toIso8601String(),
+                        'arrival_time' => $ticket->booking->schedule->arrival_time->toIso8601String(),
                     ],
                     'bus' => [
                         'name' => $ticket->booking->schedule->bus->bus_name,
@@ -252,7 +252,7 @@ class TicketController extends Controller
                         'schedule' => [
                             'origin' => $ticket->booking->schedule->departure_city,
                             'destination' => $ticket->booking->schedule->arrival_city,
-                            'departure_time' => $ticket->booking->schedule->departure_time->format('Y-m-d H:i:s'),
+                            'departure_time' => $ticket->booking->schedule->departure_time->toIso8601String(),
                         ],
                     ]
                 ]

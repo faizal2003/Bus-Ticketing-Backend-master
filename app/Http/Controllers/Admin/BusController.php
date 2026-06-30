@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bus;
+use App\Models\Driver;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -34,7 +36,7 @@ class BusController extends Controller
         }
 
         // Load dengan schedules count
-        $buses = $query->withCount(['schedules', 'schedules as active_schedules_count' => function($q) {
+        $buses = $query->with(['driver', 'conductor'])->withCount(['schedules', 'schedules as active_schedules_count' => function($q) {
             $q->where('status', 'active');
         }])->latest()->paginate(10);
 
@@ -61,7 +63,10 @@ class BusController extends Controller
             'maintenance' => 'Maintenance'
         ];
 
-        return view('admin.buses.create', compact('types', 'statuses'));
+        $drivers = Driver::where('status', 'active')->orderBy('name', 'asc')->get();
+        $conductors = User::conductors()->active()->orderBy('name', 'asc')->get();
+
+        return view('admin.buses.create', compact('types', 'statuses', 'drivers', 'conductors'));
     }
 
     /**
@@ -83,6 +88,8 @@ class BusController extends Controller
             'facilities'     => 'nullable|array',   // ← ubah jadi array
             'status'         => 'required|in:active,inactive,maintenance',
             'image'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'driver_id'      => 'nullable|exists:drivers,id',
+            'conductor_id'   => 'nullable|exists:users,id',
         ], [
             'bus_name.required'    => 'Nama bus wajib diisi',
             'bus_number.required'  => 'Nomor bus wajib diisi',
@@ -125,6 +132,8 @@ class BusController extends Controller
                 'facilities'   => $facilities,
                 'status'       => $request->status,
                 'image'        => $imageName,
+                'driver_id'    => $request->driver_id,
+                'conductor_id' => $request->conductor_id,
             ]);
 
             return redirect()->route('admin.buses.index')
@@ -142,7 +151,7 @@ class BusController extends Controller
     public function show($id)
     {
         try {
-            $bus = Bus::with('schedules')->findOrFail($id);
+            $bus = Bus::with(['schedules', 'driver', 'conductor'])->findOrFail($id);
             return view('admin.buses.show', compact('bus'));
         } catch (\Exception $e) {
             return redirect()->route('admin.buses.index')
@@ -173,7 +182,10 @@ class BusController extends Controller
                 'maintenance' => 'Maintenance'
             ];
 
-            return view('admin.buses.edit', compact('bus', 'types', 'statuses'));
+            $drivers = Driver::where('status', 'active')->orderBy('name', 'asc')->get();
+            $conductors = User::conductors()->active()->orderBy('name', 'asc')->get();
+
+            return view('admin.buses.edit', compact('bus', 'types', 'statuses', 'drivers', 'conductors'));
         } catch (\Exception $e) {
             return redirect()->route('admin.buses.index')
                 ->with('error', 'Bus tidak ditemukan.');
@@ -202,6 +214,8 @@ class BusController extends Controller
                 'facilities'     => 'nullable|array',
                 'status'         => 'required|in:active,inactive,maintenance',
                 'image'          => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+                'driver_id'      => 'nullable|exists:drivers,id',
+                'conductor_id'   => 'nullable|exists:users,id',
             ], [
                 'plate_number.regex' => 'Format plat nomor tidak valid (Contoh: B 1234 ABC)',
             ]);
@@ -232,6 +246,8 @@ class BusController extends Controller
                 'facilities'   => $facilities,
                 'status'       => $request->status,
                 'image'        => $imageName,
+                'driver_id'    => $request->driver_id,
+                'conductor_id' => $request->conductor_id,
             ]);
 
             return redirect()->route('admin.buses.index')

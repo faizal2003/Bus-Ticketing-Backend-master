@@ -18,15 +18,29 @@
 
         <!-- Profile Form -->
         <div class="bg-white rounded-lg shadow">
-            <form method="POST" action="{{ route('admin.profile.update') }}">
+            <form method="POST" action="{{ route('admin.profile.update') }}" enctype="multipart/form-data">
                 @csrf
                 @method('PATCH')
                 <div class="p-6 space-y-6">
                     <!-- Profile Picture -->
                     <div class="flex items-center space-x-6">
-                        <div
-                            class="h-24 w-24 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        <div class="h-24 w-24 rounded-full overflow-hidden bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+                            @if($user->avatar_url)
+                                <img src="{{ $user->avatar_url }}" alt="{{ $user->name }}" class="h-full w-full object-cover">
+                            @else
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            @endif
+                        </div>
+                        <div class="flex-1">
+                            <label for="avatar" class="block text-sm font-medium text-gray-700 mb-2">
+                                Foto Profil
+                            </label>
+                            <input type="file" id="avatar" name="avatar" accept="image/*"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, WEBP. Maks 2MB.</p>
+                            @error('avatar')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">{{ $user->name }}</h3>

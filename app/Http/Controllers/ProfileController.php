@@ -30,18 +30,32 @@ class ProfileController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:20'],
+            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ], [
             'name.required' => 'Nama wajib diisi',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan',
+            'avatar.image' => 'File harus berupa gambar.',
+            'avatar.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp.',
+            'avatar.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
-        $user->update([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-        ]);
+        ];
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = $path;
+        }
+
+        $user->update($data);
 
         return redirect()->route('profile.edit')
             ->with('success', 'Profil berhasil diperbarui.');

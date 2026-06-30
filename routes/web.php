@@ -16,12 +16,12 @@ use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 
-// Super Admin
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController as SuperAdminUserController;
 use App\Http\Controllers\SuperAdmin\SettingController as SuperAdminSettingController;
 use App\Http\Controllers\SuperAdmin\ReportController as SuperAdminReportController;
 use App\Http\Controllers\SuperAdmin\RouteController as SuperAdminRouteController;
+use App\Http\Controllers\SuperAdmin\DriverController as SuperAdminDriverController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +51,7 @@ Route::middleware(['auth'])->group(function () {
     // Profile routes for all users
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -137,6 +138,9 @@ Route::middleware(['auth', 'check.role:super_admin'])
         // User Management
         Route::resource('users', SuperAdminUserController::class);
         Route::patch('/users/{user}/toggle-status', [SuperAdminUserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+        // Driver Management
+        Route::resource('drivers', SuperAdminDriverController::class);
 
         // Route Management
         Route::resource('routes', SuperAdminRouteController::class);

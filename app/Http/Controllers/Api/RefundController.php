@@ -35,7 +35,7 @@ class RefundController extends Controller
                         'schedule' => [
                             'departure_city' => $refund->booking->schedule->departure_city ?? '-',
                             'arrival_city' => $refund->booking->schedule->arrival_city ?? '-',
-                            'departure_time' => optional($refund->booking->schedule)->departure_time?->format('Y-m-d H:i:s'),
+                            'departure_time' => optional($refund->booking->schedule)->departure_time?->toIso8601String(),
                         ],
                     ];
                 });
@@ -91,7 +91,7 @@ class RefundController extends Controller
                         'schedule' => [
                             'departure_city' => $refund->booking->schedule->departure_city ?? '-',
                             'arrival_city' => $refund->booking->schedule->arrival_city ?? '-',
-                            'departure_time' => optional($refund->booking->schedule)->departure_time?->format('Y-m-d H:i:s'),
+                            'departure_time' => optional($refund->booking->schedule)->departure_time?->toIso8601String(),
                             'bus_name' => $refund->booking->schedule->bus->bus_name ?? '-',
                         ],
                         'passengers' => $refund->booking->passengers->map(function($p) {

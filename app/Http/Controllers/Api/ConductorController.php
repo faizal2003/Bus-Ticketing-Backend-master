@@ -121,7 +121,7 @@ class ConductorController extends Controller
                     'message' => 'Bus has already departed',
                     'data' => [
                         'ticket_code' => $ticket->ticket_code,
-                        'departure_time' => $ticket->booking->schedule->departure_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $ticket->booking->schedule->departure_time->toIso8601String(),
                     ]
                 ], 400);
             }
@@ -183,7 +183,7 @@ class ConductorController extends Controller
                     'schedule' => [
                         'departure_city' => $ticket->booking->schedule->departure_city,
                         'arrival_city' => $ticket->booking->schedule->arrival_city,
-                        'departure_time' => $ticket->booking->schedule->departure_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $ticket->booking->schedule->departure_time->toIso8601String(),
                         'bus_name' => $ticket->booking->schedule->bus->bus_name,
                         'bus_number' => $ticket->booking->schedule->bus->bus_number,
                     ],
@@ -242,7 +242,7 @@ class ConductorController extends Controller
                 'data' => [
                     'schedule_id' => $schedule->id,
                     'bus_name' => $schedule->bus->bus_name,
-                    'departure_time' => $schedule->departure_time->format('Y-m-d H:i:s'),
+                    'departure_time' => $schedule->departure_time->toIso8601String(),
                     'total_passengers' => count($passengers),
                     'passengers' => $passengers
                 ]
@@ -291,8 +291,8 @@ class ConductorController extends Controller
                         ],
                         'departure_city' => $schedule->departure_city,
                         'arrival_city' => $schedule->arrival_city,
-                        'departure_time' => $schedule->departure_time->format('Y-m-d H:i:s'),
-                        'arrival_time' => $schedule->arrival_time->format('Y-m-d H:i:s'),
+                        'departure_time' => $schedule->departure_time->toIso8601String(),
+                        'arrival_time' => $schedule->arrival_time->toIso8601String(),
                         'total_passengers' => $bookedCount,
                         'boarded_passengers' => $boardedCount,
                         'status' => $schedule->status,
