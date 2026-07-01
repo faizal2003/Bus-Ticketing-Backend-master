@@ -15,14 +15,30 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     @stack('styles')
+    <style>
+        /* Custom Scrollbar for Sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100">
     <!-- Sidebar -->
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white">
-            <div class="p-6">
+        <div class="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white flex flex-col h-screen">
+            <div class="p-6 shrink-0">
                 <div class="flex items-center">
                     <div class="h-10 w-10 rounded-lg bg-white flex items-center justify-center overflow-hidden">
                         @if($companyLogo)
@@ -38,7 +54,7 @@
                 </div>
             </div>
 
-            <nav class="mt-6 space-y-1">
+            <nav class="mt-6 space-y-1 flex-1 overflow-y-auto pb-4 custom-scrollbar">
                 <!-- 1. Dashboard -->
                 <a href="{{ auth()->user()->role === 'super_admin' ? route('superadmin.dashboard') : route('admin.dashboard') }}"
                     class="flex items-center px-6 py-3 {{ (request()->routeIs('admin.dashboard') || request()->routeIs('superadmin.dashboard')) ? 'bg-purple-700 border-r-4 border-yellow-400' : 'hover:bg-purple-700' }}">
@@ -252,7 +268,7 @@
                 @endif
             </nav>
 
-            <div class="absolute bottom-0 w-64 p-6">
+            <div class="p-6 shrink-0 mt-auto">
                 <div class="border-t border-blue-700 pt-4">
                     <div class="flex items-center">
                         <div
